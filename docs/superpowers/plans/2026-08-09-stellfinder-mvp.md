@@ -339,6 +339,8 @@ git commit -m "feat: ingest official event announcements daily"
 
 `docs/operations.md`에는 Supabase 프로젝트 연결, `supabase db push`, Vercel 환경변수 5개 설정, Vercel cron 수동 호출 검증, `needs_review` 행을 Supabase Dashboard에서 `verified` 또는 삭제로 처리하는 절차를 적는다. 서비스 키와 OpenAI 키가 브라우저 코드에 노출되면 안 된다는 경고를 포함한다.
 
+데이터 보관 기준도 함께 적는다. 공지 이미지·원문 HTML·AI 검색 전문은 저장하지 않으며, 제외 후보는 90일 뒤 삭제한다. DB 전체 사용량이 480MB를 넘으면 일일 작업 시작 전에 가장 오래된 행사부터 삭제해 480MB 미만으로 낮추고, 삭제 건수와 기준 날짜를 운영 로그에 기록한다.
+
 - [ ] **Step 2: 공개 데이터 보호를 수동 검증한다.**
 
 Supabase SQL Editor에서 anon 역할로 `status = 'needs_review'` 행을 읽을 수 없는지, `verified` 행은 API에서 읽히는지 확인한다.
