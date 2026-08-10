@@ -115,7 +115,7 @@ export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps
           <div className="flex items-center justify-center gap-5 text-2xl font-bold"><button aria-label="이전 달" onClick={() => changeMonth(-1)} type="button">‹</button><h1>{month.getFullYear()}.{String(month.getMonth() + 1).padStart(2, '0')}</h1><button aria-label="다음 달" onClick={() => changeMonth(1)} type="button">›</button></div>
           <div aria-hidden="true" />
         </header>
-        <nav className="mb-4 flex flex-wrap gap-2" aria-label="보기 전환">
+        <nav className="mb-4 flex flex-wrap justify-center gap-2" aria-label="보기 전환">
           <button className={view === 'calendar' ? 'rounded-lg bg-[#8C6CFF] px-5 py-2 text-sm font-semibold text-white' : 'rounded-lg border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-600'} onClick={() => setView('calendar')} type="button">캘린더 보기</button>
           <button className={view === 'upcoming' ? 'rounded-lg bg-[#8C6CFF] px-5 py-2 text-sm font-semibold text-white' : 'rounded-lg border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-600'} onClick={() => setView('upcoming')} type="button">다가오는 일정 보기</button>
         </nav>

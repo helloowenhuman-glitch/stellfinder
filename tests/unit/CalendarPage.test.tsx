@@ -9,6 +9,12 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
+test('centers the calendar and upcoming view switch below the month heading', () => {
+  render(<CalendarPage />)
+
+  expect(screen.getByRole('navigation', { name: '보기 전환' })).toHaveClass('justify-center')
+})
+
 test('loads events from the public events API', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
     ok: true,
