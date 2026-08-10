@@ -84,6 +84,7 @@ function EventDetailDialog({ event, onClose, todayKey }: { event: EventRecord; o
 export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps) {
   const [month, setMonth] = useState(FIRST_CALENDAR_MONTH)
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false)
+  const [isMonthListOpen, setIsMonthListOpen] = useState(false)
   const [draftYear, setDraftYear] = useState(FIRST_CALENDAR_MONTH.getFullYear())
   const [draftMonth, setDraftMonth] = useState(FIRST_CALENDAR_MONTH.getMonth() + 1)
   const [view, setView] = useState<CalendarView>('calendar')
@@ -120,6 +121,7 @@ export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps
   const openMonthPicker = () => {
     setDraftYear(month.getFullYear())
     setDraftMonth(month.getMonth() + 1)
+    setIsMonthListOpen(false)
     setIsMonthPickerOpen(true)
   }
   const selectDraftYear = (value: number) => {
@@ -132,6 +134,7 @@ export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps
     const selected = new Date(draftYear, draftMonth - 1, 1)
 
     setMonth(selected < FIRST_CALENDAR_MONTH ? FIRST_CALENDAR_MONTH : selected)
+    setIsMonthListOpen(false)
     setIsMonthPickerOpen(false)
   }
 
@@ -188,14 +191,21 @@ export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps
           <div className="fixed inset-0 z-40 flex items-end bg-slate-950/40 p-4" role="dialog" aria-modal="true" aria-label="월 선택">
             <section className="mx-auto w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
               <h2 className="text-center text-xl font-bold">{draftYear}년 {draftMonth}월 선택</h2>
-              <div className="mt-6 grid grid-cols-2 gap-4">
+              <div className="mt-6 grid grid-cols-[10rem_minmax(0,1fr)] gap-4">
                 <label className="grid gap-2 text-sm font-semibold text-slate-600">연도
-                  <input aria-label="연도 선택" className="rounded-lg border border-slate-200 px-3 py-3 text-lg font-bold text-slate-900" min={FIRST_CALENDAR_MONTH.getFullYear()} onChange={(event) => selectDraftYear(Number(event.target.value))} type="number" value={draftYear} />
+                  <input aria-label="연도 선택" className="w-40 rounded-xl border border-slate-200 px-3 py-3 text-lg font-bold text-slate-900" min={FIRST_CALENDAR_MONTH.getFullYear()} onChange={(event) => selectDraftYear(Number(event.target.value))} type="number" value={draftYear} />
                 </label>
-                <label className="grid gap-2 text-sm font-semibold text-slate-600">월
-                  <select aria-label="월 선택" className="rounded-lg border border-slate-200 bg-white px-3 py-3 text-lg font-bold text-slate-900" onChange={(event) => setDraftMonth(Number(event.target.value))} value={draftMonth}>
-                    {Array.from({ length: 12 }, (_, index) => index + 1).map((value) => <option disabled={draftYear === FIRST_CALENDAR_MONTH.getFullYear() && value < FIRST_CALENDAR_MONTH.getMonth() + 1} key={value} value={value}>{value}월</option>)}
-                  </select>
+                <label className="relative grid gap-2 text-sm font-semibold text-slate-600">월
+                  <button aria-expanded={isMonthListOpen} aria-label="월 목록 열기" className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-3 text-left text-lg font-bold text-slate-900" onClick={() => setIsMonthListOpen((open) => !open)} type="button">{draftMonth}월 <span aria-hidden="true">⌄</span></button>
+                  {isMonthListOpen && (
+                    <div aria-label="월 선택지" className="absolute bottom-full z-10 mb-2 max-h-64 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl" role="listbox">
+                      {Array.from({ length: 12 }, (_, index) => index + 1).map((value) => {
+                        const isUnavailable = draftYear === FIRST_CALENDAR_MONTH.getFullYear() && value < FIRST_CALENDAR_MONTH.getMonth() + 1
+
+                        return <button aria-selected={draftMonth === value} className={draftMonth === value ? 'w-full rounded-lg bg-[#8C6CFF] px-3 py-2 text-left font-semibold text-white' : 'w-full rounded-lg px-3 py-2 text-left font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300'} disabled={isUnavailable} key={value} onClick={() => { setDraftMonth(value); setIsMonthListOpen(false) }} role="option" type="button">{value}월</button>
+                      })}
+                    </div>
+                  )}
                 </label>
               </div>
               <div className="mt-6 grid grid-cols-2 gap-3">

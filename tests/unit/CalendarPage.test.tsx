@@ -20,7 +20,8 @@ test('selects a future month from the month picker', () => {
 
   fireEvent.click(screen.getByRole('button', { name: '월 선택 열기' }))
   fireEvent.change(screen.getByRole('spinbutton', { name: '연도 선택' }), { target: { value: '2027' } })
-  fireEvent.change(screen.getByRole('combobox', { name: '월 선택' }), { target: { value: '2' } })
+  fireEvent.click(screen.getByRole('button', { name: '월 목록 열기' }))
+  fireEvent.click(screen.getByRole('option', { name: '2월' }))
   fireEvent.click(screen.getByRole('button', { name: '완료' }))
 
   expect(screen.getByRole('button', { name: '월 선택 열기' })).toHaveTextContent('2027.02')
@@ -32,9 +33,22 @@ test('starts the calendar at August 2026 and does not allow earlier months', () 
   expect(screen.getByRole('button', { name: '이전 달' })).toBeDisabled()
 
   fireEvent.click(screen.getByRole('button', { name: '월 선택 열기' }))
+  fireEvent.click(screen.getByRole('button', { name: '월 목록 열기' }))
 
   expect(screen.getByRole('option', { name: '1월' })).toBeDisabled()
   expect(screen.getByRole('option', { name: '8월' })).not.toBeDisabled()
+})
+
+test('uses a compact year field and a rounded month option list', () => {
+  render(<CalendarPage />)
+
+  fireEvent.click(screen.getByRole('button', { name: '월 선택 열기' }))
+
+  expect(screen.getByRole('spinbutton', { name: '연도 선택' })).toHaveClass('w-40')
+
+  fireEvent.click(screen.getByRole('button', { name: '월 목록 열기' }))
+
+  expect(screen.getByRole('listbox', { name: '월 선택지' })).toHaveClass('rounded-xl')
 })
 
 test('loads events from the public events API', async () => {
