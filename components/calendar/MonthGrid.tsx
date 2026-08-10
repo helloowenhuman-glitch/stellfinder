@@ -14,8 +14,6 @@ interface WeekEventSegment {
   event: EventRecord
   startColumn: number
   span: number
-  startsHere: boolean
-  endsHere: boolean
 }
 
 function getWeekEventSegments(events: EventRecord[], week: Date[]): WeekEventSegment[] {
@@ -39,26 +37,8 @@ function getWeekEventSegments(events: EventRecord[], week: Date[]): WeekEventSeg
       event,
       startColumn: startIndex + 1,
       span: endIndex - startIndex + 1,
-      startsHere: segmentStart === start,
-      endsHere: segmentEnd === end,
     }]
   })
-}
-
-function segmentRounding({ startsHere, endsHere }: WeekEventSegment) {
-  if (startsHere && endsHere) {
-    return 'rounded-md'
-  }
-
-  if (startsHere) {
-    return 'rounded-l-md rounded-r-none'
-  }
-
-  if (endsHere) {
-    return 'rounded-l-none rounded-r-md'
-  }
-
-  return 'rounded-none'
 }
 
 export function MonthGrid({ year, monthIndex, events, onSelectEvent }: MonthGridProps) {
@@ -92,7 +72,7 @@ export function MonthGrid({ year, monthIndex, events, onSelectEvent }: MonthGrid
               <div className="pointer-events-none absolute inset-x-2 top-9 grid grid-cols-7 auto-rows-min gap-y-1">
                 {segments.map((segment) => (
                   <button
-                    className={`pointer-events-auto w-full truncate border px-2 py-1 text-left text-xs font-semibold ${segmentRounding(segment)}`}
+                    className="pointer-events-auto w-full truncate rounded-md border px-2 py-1 text-center text-xs font-semibold"
                     key={`${segment.event.id}-${toDateKey(week[0])}`}
                     onClick={() => onSelectEvent(segment.event)}
                     style={{ backgroundColor: `${segment.event.displayColor}20`, borderColor: `${segment.event.displayColor}55`, color: segment.event.displayColor, gridColumn: `${segment.startColumn} / span ${segment.span}` }}

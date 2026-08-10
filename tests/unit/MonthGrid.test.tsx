@@ -31,10 +31,11 @@ test('renders one continuous bar across dates for a multi-day event in the same 
 
   expect(eventBars).toHaveLength(1)
   expect(eventBars[0]).toHaveClass('rounded-md')
+  expect(eventBars[0]).toHaveClass('text-center')
   expect(eventBars[0]).toHaveStyle({ gridColumn: '4 / span 3' })
 })
 
-test('splits a period bar at a week boundary without rounding the middle edges', () => {
+test('renders each weekly period bar with rounded ends and a centered title', () => {
   const crossingEvent: EventRecord = {
     ...popupEvent,
     id: 'crossing-popup',
@@ -48,7 +49,7 @@ test('splits a period bar at a week boundary without rounding the middle edges',
 
   expect(eventBars).toHaveLength(2)
   expect(eventBars[0]).toHaveStyle({ gridColumn: '6 / span 2' })
-  expect(eventBars[0]).toHaveClass('rounded-l-md', 'rounded-r-none')
+  expect(eventBars[0]).toHaveClass('rounded-md', 'text-center')
   expect(eventBars[1]).toHaveStyle({ gridColumn: '1 / span 1' })
-  expect(eventBars[1]).toHaveClass('rounded-l-none', 'rounded-r-md')
+  expect(eventBars[1]).toHaveClass('rounded-md', 'text-center')
 })
