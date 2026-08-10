@@ -24,7 +24,7 @@ test('rejects an inbound Claude request without the webhook secret', async () =>
 
 test('reports event storage failures separately from invalid payloads', async () => {
   process.env.CLAUDE_WEBHOOK_SECRET = 'test-secret'
-  vi.mocked(ingestCandidates).mockRejectedValueOnce(new Error('database connection failed'))
+  vi.mocked(ingestCandidates).mockRejectedValueOnce(new Error('Unable to save events: database connection failed'))
 
   const response = await POST(new Request('http://localhost/api/inbound/claude', {
     method: 'POST',
@@ -33,5 +33,5 @@ test('reports event storage failures separately from invalid payloads', async ()
   }))
 
   expect(response.status).toBe(500)
-  await expect(response.json()).resolves.toEqual({ error: 'Event storage failure' })
+  await expect(response.json()).resolves.toEqual({ error: 'Event storage failure', operation: 'upsert' })
 })
