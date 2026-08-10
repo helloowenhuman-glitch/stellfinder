@@ -47,3 +47,19 @@ test('refuses to send an event file when the webhook secret is missing', async (
     await rm(directory, { recursive: true, force: true })
   }
 })
+
+test('reports the safe storage operation from a rejected webhook response', async () => {
+  const { submitEvents } = await import(scriptUrl)
+  const { directory, filePath } = await writeEventPayload()
+  const fetchImpl = vi.fn().mockResolvedValue(new Response(
+    JSON.stringify({ error: 'Event storage failure', operation: 'upsert' }),
+    { status: 500 },
+  ))
+
+  try {
+    await expect(submitEvents({ filePath, secret: 'test-webhook-secret', fetchImpl }))
+      .rejects.toThrow('The Stellfinder inbound webhook returned HTTP 500 (upsert).')
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})

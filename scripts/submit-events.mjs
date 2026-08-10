@@ -55,7 +55,25 @@ export async function submitEvents({ filePath, secret, fetchImpl = fetch }) {
   }
 
   if (!response.ok) {
-    throw submissionError(`The Stellfinder inbound webhook returned HTTP ${response.status}.`)
+    let operation
+
+    try {
+      const body = await response.json()
+
+      if (
+        body
+        && typeof body === 'object'
+        && (body.operation === 'lookup' || body.operation === 'upsert')
+      ) {
+        operation = body.operation
+      }
+    } catch {
+      // The webhook may return a non-JSON error response.
+    }
+
+    throw submissionError(
+      `The Stellfinder inbound webhook returned HTTP ${response.status}${operation ? ` (${operation})` : ''}.`,
+    )
   }
 
   try {
