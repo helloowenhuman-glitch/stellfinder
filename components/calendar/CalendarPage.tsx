@@ -22,6 +22,8 @@ const SAMPLE_EVENTS: EventRecord[] = [
 
 type CalendarView = 'calendar' | 'upcoming'
 
+const FIRST_CALENDAR_MONTH = new Date(2026, 7, 1)
+
 type CalendarPageProps = {
   todayKey?: string
 }
@@ -80,7 +82,10 @@ function EventDetailDialog({ event, onClose, todayKey }: { event: EventRecord; o
 }
 
 export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps) {
-  const [month, setMonth] = useState(new Date(2026, 7, 1))
+  const [month, setMonth] = useState(FIRST_CALENDAR_MONTH)
+  const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false)
+  const [draftYear, setDraftYear] = useState(FIRST_CALENDAR_MONTH.getFullYear())
+  const [draftMonth, setDraftMonth] = useState(FIRST_CALENDAR_MONTH.getMonth() + 1)
   const [view, setView] = useState<CalendarView>('calendar')
   const [category, setCategory] = useState<'all' | EventCategory>('all')
   const [member, setMember] = useState<'all' | Participant>('all')
@@ -105,14 +110,37 @@ export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps
       .catch(() => setEvents(SAMPLE_EVENTS))
   }, [month])
 
-  const changeMonth = (offset: number) => setMonth((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1))
+  const isFirstCalendarMonth = month.getFullYear() === FIRST_CALENDAR_MONTH.getFullYear()
+    && month.getMonth() === FIRST_CALENDAR_MONTH.getMonth()
+  const changeMonth = (offset: number) => setMonth((current) => {
+    const next = new Date(current.getFullYear(), current.getMonth() + offset, 1)
+
+    return next < FIRST_CALENDAR_MONTH ? current : next
+  })
+  const openMonthPicker = () => {
+    setDraftYear(month.getFullYear())
+    setDraftMonth(month.getMonth() + 1)
+    setIsMonthPickerOpen(true)
+  }
+  const selectDraftYear = (value: number) => {
+    setDraftYear(value)
+    if (value === FIRST_CALENDAR_MONTH.getFullYear() && draftMonth < FIRST_CALENDAR_MONTH.getMonth() + 1) {
+      setDraftMonth(FIRST_CALENDAR_MONTH.getMonth() + 1)
+    }
+  }
+  const applyMonthPicker = () => {
+    const selected = new Date(draftYear, draftMonth - 1, 1)
+
+    setMonth(selected < FIRST_CALENDAR_MONTH ? FIRST_CALENDAR_MONTH : selected)
+    setIsMonthPickerOpen(false)
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 md:px-8">
       <div className="mx-auto max-w-7xl">
         <header className="mb-8 grid grid-cols-[1fr_auto_1fr] items-center gap-5">
           <p className="text-2xl font-black tracking-[0.12em]">STELLFINDER</p>
-          <div className="flex items-center justify-center gap-5 text-2xl font-bold"><button aria-label="이전 달" onClick={() => changeMonth(-1)} type="button">‹</button><h1>{month.getFullYear()}.{String(month.getMonth() + 1).padStart(2, '0')}</h1><button aria-label="다음 달" onClick={() => changeMonth(1)} type="button">›</button></div>
+          <div className="flex items-center justify-center gap-5 text-2xl font-bold"><button aria-label="이전 달" className="disabled:cursor-not-allowed disabled:opacity-30" disabled={isFirstCalendarMonth} onClick={() => changeMonth(-1)} type="button">‹</button><h1><button aria-label="월 선택 열기" className="rounded-md px-2 py-1 hover:bg-slate-100" onClick={openMonthPicker} type="button">{month.getFullYear()}.{String(month.getMonth() + 1).padStart(2, '0')}</button></h1><button aria-label="다음 달" onClick={() => changeMonth(1)} type="button">›</button></div>
           <div aria-hidden="true" />
         </header>
         <nav className="mb-4 flex flex-wrap justify-center gap-2" aria-label="보기 전환">
@@ -155,6 +183,27 @@ export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps
               </div>
             )}
           </section>
+        )}
+        {isMonthPickerOpen && (
+          <div className="fixed inset-0 z-40 flex items-end bg-slate-950/40 p-4" role="dialog" aria-modal="true" aria-label="월 선택">
+            <section className="mx-auto w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+              <h2 className="text-center text-xl font-bold">{draftYear}년 {draftMonth}월 선택</h2>
+              <div className="mt-6 grid grid-cols-2 gap-4">
+                <label className="grid gap-2 text-sm font-semibold text-slate-600">연도
+                  <input aria-label="연도 선택" className="rounded-lg border border-slate-200 px-3 py-3 text-lg font-bold text-slate-900" min={FIRST_CALENDAR_MONTH.getFullYear()} onChange={(event) => selectDraftYear(Number(event.target.value))} type="number" value={draftYear} />
+                </label>
+                <label className="grid gap-2 text-sm font-semibold text-slate-600">월
+                  <select aria-label="월 선택" className="rounded-lg border border-slate-200 bg-white px-3 py-3 text-lg font-bold text-slate-900" onChange={(event) => setDraftMonth(Number(event.target.value))} value={draftMonth}>
+                    {Array.from({ length: 12 }, (_, index) => index + 1).map((value) => <option disabled={draftYear === FIRST_CALENDAR_MONTH.getFullYear() && value < FIRST_CALENDAR_MONTH.getMonth() + 1} key={value} value={value}>{value}월</option>)}
+                  </select>
+                </label>
+              </div>
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <button className="rounded-lg border border-slate-200 px-4 py-3 font-semibold text-slate-600" onClick={() => setIsMonthPickerOpen(false)} type="button">취소</button>
+                <button className="rounded-lg bg-[#8C6CFF] px-4 py-3 font-semibold text-white" onClick={applyMonthPicker} type="button">완료</button>
+              </div>
+            </section>
+          </div>
         )}
         {selectedDate && <div className="fixed inset-0 z-20 flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true" aria-label={`${selectedDate} 일정`}><section className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"><button className="float-right text-slate-500" onClick={() => setSelectedDate(null)} type="button" aria-label="닫기">×</button><h2 className="mb-4 text-xl font-bold">{selectedDate.replaceAll('-', '.')} 일정</h2>{selectedDateEvents.length === 0 ? <p className="text-sm text-slate-500">등록된 행사가 없습니다.</p> : <div className="space-y-2">{selectedDateEvents.map((event) => <EventButton event={event} key={event.id} onSelect={(selected) => { setSelectedDate(null); setSelectedEvent(selected) }} todayKey={todayKey} />)}</div>}</section></div>}
         {selectedEvent && <EventDetailDialog event={selectedEvent} onClose={() => setSelectedEvent(null)} todayKey={todayKey} />}

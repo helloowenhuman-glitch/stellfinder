@@ -15,6 +15,28 @@ test('centers the calendar and upcoming view switch below the month heading', ()
   expect(screen.getByRole('navigation', { name: '보기 전환' })).toHaveClass('justify-center')
 })
 
+test('selects a future month from the month picker', () => {
+  render(<CalendarPage />)
+
+  fireEvent.click(screen.getByRole('button', { name: '월 선택 열기' }))
+  fireEvent.change(screen.getByRole('spinbutton', { name: '연도 선택' }), { target: { value: '2027' } })
+  fireEvent.change(screen.getByRole('combobox', { name: '월 선택' }), { target: { value: '2' } })
+  fireEvent.click(screen.getByRole('button', { name: '완료' }))
+
+  expect(screen.getByRole('button', { name: '월 선택 열기' })).toHaveTextContent('2027.02')
+})
+
+test('starts the calendar at August 2026 and does not allow earlier months', () => {
+  render(<CalendarPage />)
+
+  expect(screen.getByRole('button', { name: '이전 달' })).toBeDisabled()
+
+  fireEvent.click(screen.getByRole('button', { name: '월 선택 열기' }))
+
+  expect(screen.getByRole('option', { name: '1월' })).toBeDisabled()
+  expect(screen.getByRole('option', { name: '8월' })).not.toBeDisabled()
+})
+
 test('loads events from the public events API', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
     ok: true,
