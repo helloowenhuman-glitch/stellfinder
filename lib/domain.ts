@@ -18,6 +18,7 @@ export interface EventRecord {
   location: string | null
   summary: string
   sourceUrl: string
+  purchaseUrl?: string | null
   sourceChannel: 'official-site' | 'official-x'
   sourcePublishedAt: string | null
   status: EventStatus

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { MonthGrid } from '@/components/calendar/MonthGrid'
+import { getCalendarEventTitle, getDdayLabel, getKoreaDateKey, isUpcomingWithinFifteenDays } from '@/lib/calendar'
 import type { EventCategory, EventRecord } from '@/lib/domain'
 import { MEMBER_COLORS, type Participant } from '@/lib/member-colors'
 
@@ -19,17 +20,82 @@ const SAMPLE_EVENTS: EventRecord[] = [
   { id: 'mashiro', title: '마시로 굿즈 예약 오픈', category: 'goods', startAt: '2026-08-19T00:00:00+09:00', endAt: null, allDay: true, participants: ['네네코 마시로'], displayColor: '#B3B3B3', location: null, summary: '개발용 예시 일정입니다.', sourceUrl: 'https://stellive.me/news/example-mashiro', sourceChannel: 'official-site', sourcePublishedAt: null, status: 'verified' },
 ]
 
-export function CalendarPage() {
+type CalendarView = 'calendar' | 'upcoming'
+
+type CalendarPageProps = {
+  todayKey?: string
+}
+
+function occursOn(event: EventRecord, dateKey: string) {
+  const start = event.startAt.slice(0, 10)
+  const end = event.endAt?.slice(0, 10) ?? start
+
+  return start <= dateKey && dateKey <= end
+}
+
+function upcomingDateKey(event: EventRecord) {
+  return (event.category === 'goods' && event.endAt ? event.endAt : event.startAt).slice(0, 10)
+}
+
+function formatPeriod(event: EventRecord) {
+  const end = event.endAt ? ` ~ ${event.endAt.slice(0, 16).replace('T', ' ')}` : ''
+
+  return `${event.startAt.slice(0, 16).replace('T', ' ')}${end}`
+}
+
+function EventButton({ event, onSelect, todayKey }: { event: EventRecord; onSelect: (event: EventRecord) => void; todayKey: string }) {
+  return (
+    <button
+      className="w-full truncate rounded-md border px-3 py-2 text-center text-sm font-semibold"
+      onClick={() => onSelect(event)}
+      style={{ backgroundColor: `${event.displayColor}20`, borderColor: `${event.displayColor}55`, color: event.displayColor }}
+      type="button"
+    >
+      {getCalendarEventTitle(event, todayKey)}
+    </button>
+  )
+}
+
+function EventDetailDialog({ event, onClose, todayKey }: { event: EventRecord; onClose: () => void; todayKey: string }) {
+  const dday = getDdayLabel(event, todayKey)
+  const sourceLabel = event.sourceChannel === 'official-x' ? '공식 X 보기' : '공식 공지 보기'
+
+  return (
+    <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true" aria-label={`${event.title} 상세`}>
+      <section className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+        <button className="float-right text-slate-500" onClick={onClose} type="button" aria-label="닫기">×</button>
+        <p className="text-sm font-semibold" style={{ color: event.displayColor }}>{CATEGORY_LABELS[event.category]}{dday ? ` · ${dday}` : ''}</p>
+        <h2 className="mt-2 text-xl font-bold">{event.title}</h2>
+        <p className="mt-3 text-sm text-slate-600">{formatPeriod(event)}</p>
+        <p className="mt-2 text-sm text-slate-600">참여 멤버: {event.participants.join(', ')}</p>
+        {event.location && <p className="mt-2 text-sm text-slate-600">장소: {event.location}</p>}
+        {event.summary && <p className="mt-3 text-sm text-slate-600">{event.summary}</p>}
+        <div className="mt-5 flex flex-wrap gap-2">
+          {event.purchaseUrl && <a className="rounded-lg bg-[#6847B3] px-4 py-2 text-sm font-semibold text-white" href={event.purchaseUrl} rel="noreferrer" target="_blank">구매하기</a>}
+          <a className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-[#6847B3]" href={event.sourceUrl} rel="noreferrer" target="_blank">{sourceLabel}</a>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps) {
   const [month, setMonth] = useState(new Date(2026, 7, 1))
+  const [view, setView] = useState<CalendarView>('calendar')
   const [category, setCategory] = useState<'all' | EventCategory>('all')
   const [member, setMember] = useState<'all' | Participant>('all')
   const [isMemberMenuOpen, setIsMemberMenuOpen] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<EventRecord | null>(null)
   const [events, setEvents] = useState<EventRecord[]>(SAMPLE_EVENTS)
   const filteredEvents = useMemo(() => events.filter((event) => (
     (category === 'all' || event.category === category)
     && (member === 'all' || event.participants.includes(member))
   )), [category, events, member])
+  const upcomingEvents = useMemo(() => filteredEvents
+    .filter((event) => isUpcomingWithinFifteenDays(event, todayKey))
+    .sort((left, right) => upcomingDateKey(left).localeCompare(upcomingDateKey(right))), [filteredEvents, todayKey])
+  const selectedDateEvents = selectedDate ? filteredEvents.filter((event) => occursOn(event, selectedDate)) : []
 
   useEffect(() => {
     const monthKey = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`
@@ -49,6 +115,10 @@ export function CalendarPage() {
           <div className="flex items-center justify-center gap-5 text-2xl font-bold"><button aria-label="이전 달" onClick={() => changeMonth(-1)} type="button">‹</button><h1>{month.getFullYear()}.{String(month.getMonth() + 1).padStart(2, '0')}</h1><button aria-label="다음 달" onClick={() => changeMonth(1)} type="button">›</button></div>
           <div aria-hidden="true" />
         </header>
+        <nav className="mb-4 flex flex-wrap gap-2" aria-label="보기 전환">
+          <button className={view === 'calendar' ? 'rounded-lg bg-[#8C6CFF] px-5 py-2 text-sm font-semibold text-white' : 'rounded-lg border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-600'} onClick={() => setView('calendar')} type="button">캘린더 보기</button>
+          <button className={view === 'upcoming' ? 'rounded-lg bg-[#8C6CFF] px-5 py-2 text-sm font-semibold text-white' : 'rounded-lg border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-600'} onClick={() => setView('upcoming')} type="button">다가오는 일정 보기</button>
+        </nav>
         <nav className="mb-4 flex flex-wrap gap-2" aria-label="행사 유형 필터">
           {(Object.keys(CATEGORY_LABELS) as ('all' | EventCategory)[]).map((key) => <button className={category === key ? 'rounded-lg bg-[#8C6CFF] px-5 py-2 text-sm font-semibold text-white' : 'rounded-lg border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-600'} key={key} onClick={() => setCategory(key)} type="button">{CATEGORY_LABELS[key]}</button>)}
           <div className="relative">
@@ -70,8 +140,24 @@ export function CalendarPage() {
             )}
           </div>
         </nav>
-        <MonthGrid year={month.getFullYear()} monthIndex={month.getMonth()} events={filteredEvents} onSelectEvent={setSelectedEvent} />
-        {selectedEvent && <div className="fixed inset-0 flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true"><section className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"><button className="float-right text-slate-500" onClick={() => setSelectedEvent(null)} type="button" aria-label="닫기">×</button><p className="text-sm font-semibold" style={{ color: selectedEvent.displayColor }}>{CATEGORY_LABELS[selectedEvent.category]}</p><h2 className="mt-2 text-xl font-bold">{selectedEvent.title}</h2><p className="mt-3 text-sm text-slate-600">{selectedEvent.summary}</p><a className="mt-5 inline-block text-sm font-semibold text-[#6847B3] underline" href={selectedEvent.sourceUrl} rel="noreferrer" target="_blank">공식 공지 보기</a></section></div>}
+        {view === 'calendar' ? (
+          <MonthGrid year={month.getFullYear()} monthIndex={month.getMonth()} events={filteredEvents} onSelectDate={setSelectedDate} onSelectEvent={setSelectedEvent} todayKey={todayKey} />
+        ) : (
+          <section aria-label="다가오는 일정" className="rounded-xl border border-slate-200 bg-white p-4">
+            {upcomingEvents.length === 0 ? <p className="text-sm text-slate-500">앞으로 15일 안에 챙길 일정이 없습니다.</p> : (
+              <div className="space-y-4">
+                {upcomingEvents.map((event) => (
+                  <div key={event.id}>
+                    <p className="mb-2 text-sm font-semibold text-slate-600">{upcomingDateKey(event).replaceAll('-', '.')}</p>
+                    <EventButton event={event} onSelect={setSelectedEvent} todayKey={todayKey} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+        {selectedDate && <div className="fixed inset-0 z-20 flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true" aria-label={`${selectedDate} 일정`}><section className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"><button className="float-right text-slate-500" onClick={() => setSelectedDate(null)} type="button" aria-label="닫기">×</button><h2 className="mb-4 text-xl font-bold">{selectedDate.replaceAll('-', '.')} 일정</h2>{selectedDateEvents.length === 0 ? <p className="text-sm text-slate-500">등록된 행사가 없습니다.</p> : <div className="space-y-2">{selectedDateEvents.map((event) => <EventButton event={event} key={event.id} onSelect={(selected) => { setSelectedDate(null); setSelectedEvent(selected) }} todayKey={todayKey} />)}</div>}</section></div>}
+        {selectedEvent && <EventDetailDialog event={selectedEvent} onClose={() => setSelectedEvent(null)} todayKey={todayKey} />}
       </div>
     </main>
   )

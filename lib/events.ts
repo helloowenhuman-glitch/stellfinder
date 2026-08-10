@@ -14,6 +14,7 @@ export type EventRow = {
   location: string | null
   summary: string
   source_url: string
+  purchase_url: string | null
   source_channel: EventRecord['sourceChannel']
   source_published_at: string | null
   status: EventRecord['status']
@@ -32,6 +33,7 @@ export function mapEventRow(row: EventRow): EventRecord {
     location: row.location,
     summary: row.summary,
     sourceUrl: row.source_url,
+    purchaseUrl: row.purchase_url,
     sourceChannel: row.source_channel,
     sourcePublishedAt: row.source_published_at,
     status: row.status,
@@ -45,7 +47,7 @@ export async function listVerifiedEventsForMonth(month: string): Promise<EventRe
   const supabase = createServerSupabaseClient()
   const { data, error } = await supabase
     .from('events')
-    .select('id,title,category,start_at,end_at,all_day,participants,display_color,location,summary,source_url,source_channel,source_published_at,status')
+    .select('id,title,category,start_at,end_at,all_day,participants,display_color,location,summary,source_url,purchase_url,source_channel,source_published_at,status')
     .eq('status', 'verified')
     .lt('start_at', nextMonth)
     .or(`end_at.is.null,end_at.gte.${start}`)

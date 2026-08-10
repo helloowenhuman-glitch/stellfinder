@@ -29,3 +29,19 @@ test('normalizes a trusted multi-member candidate for calendar storage', () => {
     allDay: true,
   })
 })
+
+test('keeps an HTTPS purchase link that was verified from an official announcement', () => {
+  expect(parseCandidate({
+    title: '사키하네 후야 생일 굿즈',
+    category: 'goods',
+    startAt: '2026-08-07T20:30:00+09:00',
+    endAt: '2026-09-07T23:59:59+09:00',
+    participants: ['사키하네 후야'],
+    sourceUrl: 'https://stellive.me/news/fuya-goods',
+    sourceChannel: 'official-site',
+    purchaseUrl: 'https://shop.example.jp/fuya-goods',
+    confidence: 0.95,
+  })).toMatchObject({
+    purchaseUrl: 'https://shop.example.jp/fuya-goods',
+  })
+})

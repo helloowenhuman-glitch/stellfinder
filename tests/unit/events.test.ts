@@ -6,7 +6,7 @@ test('maps a Supabase event row to the calendar event contract', () => {
     id: 'event-1', title: '린 콜라보', category: 'collaboration',
     start_at: '2026-08-21T00:00:00+09:00', end_at: null, all_day: true,
     participants: ['아오쿠모 린'], display_color: '#0045C8', location: null,
-    summary: '공식 공지 기반 일정', source_url: 'https://stellive.me/news/1',
+    summary: '공식 공지 기반 일정', source_url: 'https://stellive.me/news/1', purchase_url: null,
     source_channel: 'official-site', source_published_at: null, status: 'verified',
   })
 

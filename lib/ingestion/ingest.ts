@@ -11,6 +11,7 @@ export type EventInsert = {
   location: string | null
   summary: string
   source_url: string
+  purchase_url: string | null
   source_channel: ParsedCandidate['sourceChannel']
   source_published_at: string | null
   status: ParsedCandidate['status']
@@ -34,6 +35,7 @@ function toEventInsert(candidate: ParsedCandidate): EventInsert {
     location: candidate.location,
     summary: candidate.summary,
     source_url: candidate.sourceUrl,
+    purchase_url: candidate.purchaseUrl,
     source_channel: candidate.sourceChannel,
     source_published_at: candidate.sourcePublishedAt,
     status: candidate.status,

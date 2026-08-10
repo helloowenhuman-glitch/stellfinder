@@ -14,6 +14,9 @@ const rawCandidateSchema = z.object({
   location: z.string().trim().max(300).nullable().optional().default(null),
   summary: z.string().trim().max(1200).optional().default(''),
   sourceUrl: z.string().url(),
+  purchaseUrl: z.string().url().refine((url) => new URL(url).protocol === 'https:', {
+    message: 'purchaseUrl must use HTTPS',
+  }).nullable().optional().default(null),
   sourceChannel: z.enum(['official-site', 'official-x']),
   sourcePublishedAt: z.string().datetime({ offset: true }).nullable().optional().default(null),
   confidence: z.number().min(0).max(1),
@@ -51,6 +54,7 @@ export type ParsedCandidate = {
   location: string | null
   summary: string
   sourceUrl: string
+  purchaseUrl: string | null
   sourceChannel: 'official-site' | 'official-x'
   sourcePublishedAt: string | null
   status: EventStatus

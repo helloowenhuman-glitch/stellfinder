@@ -1,5 +1,5 @@
 import type { EventRecord } from '@/lib/domain'
-import { getMonthGrid, toDateKey } from '@/lib/calendar'
+import { getCalendarEventTitle, getKoreaDateKey, getMonthGrid, toDateKey } from '@/lib/calendar'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -8,6 +8,8 @@ interface MonthGridProps {
   monthIndex: number
   events: EventRecord[]
   onSelectEvent: (event: EventRecord) => void
+  onSelectDate?: (dateKey: string) => void
+  todayKey?: string
 }
 
 interface WeekEventSegment {
@@ -41,7 +43,7 @@ function getWeekEventSegments(events: EventRecord[], week: Date[]): WeekEventSeg
   })
 }
 
-export function MonthGrid({ year, monthIndex, events, onSelectEvent }: MonthGridProps) {
+export function MonthGrid({ year, monthIndex, events, onSelectEvent, onSelectDate, todayKey = getKoreaDateKey() }: MonthGridProps) {
   const dates = getMonthGrid(year, monthIndex)
   const weeks = Array.from({ length: dates.length / 7 }, (_, index) => dates.slice(index * 7, index * 7 + 7))
 
@@ -64,9 +66,9 @@ export function MonthGrid({ year, monthIndex, events, onSelectEvent }: MonthGrid
                 const weekday = date.getDay()
 
                 return (
-                  <div className="min-h-32 border-r border-slate-200 p-2 last:border-r-0" key={dateKey}>
+                  <button aria-label={`${dateKey} 일정 열기`} className="min-h-32 border-r border-slate-200 p-2 text-left last:border-r-0" key={dateKey} onClick={() => onSelectDate?.(dateKey)} type="button">
                     <time className={weekday === 0 ? 'text-sm font-semibold text-rose-500' : weekday === 6 ? 'text-sm font-semibold text-blue-600' : inCurrentMonth ? 'text-sm font-semibold text-slate-700' : 'text-sm text-slate-300'} dateTime={dateKey}>{date.getDate()}</time>
-                  </div>
+                  </button>
                 )
               })}
               <div className="pointer-events-none absolute inset-x-2 top-9 grid grid-cols-7 auto-rows-min gap-y-1">
@@ -78,7 +80,7 @@ export function MonthGrid({ year, monthIndex, events, onSelectEvent }: MonthGrid
                     style={{ backgroundColor: `${segment.event.displayColor}20`, borderColor: `${segment.event.displayColor}55`, color: segment.event.displayColor, gridColumn: `${segment.startColumn} / span ${segment.span}` }}
                     type="button"
                   >
-                    {segment.event.title}
+                    {getCalendarEventTitle(segment.event, todayKey)}
                   </button>
                 ))}
               </div>
