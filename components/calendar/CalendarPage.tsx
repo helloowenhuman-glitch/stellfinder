@@ -196,7 +196,7 @@ export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps
                   <input aria-label="연도 선택" className="w-40 rounded-xl border border-slate-200 px-3 py-3 text-lg font-bold text-slate-900" min={FIRST_CALENDAR_MONTH.getFullYear()} onChange={(event) => selectDraftYear(Number(event.target.value))} type="number" value={draftYear} />
                 </label>
                 <label className="relative grid gap-2 text-sm font-semibold text-slate-600">월
-                  <button aria-expanded={isMonthListOpen} aria-label="월 목록 열기" className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-3 text-left text-lg font-bold text-slate-900" onClick={() => setIsMonthListOpen((open) => !open)} type="button">{draftMonth}월 <span aria-hidden="true">⌄</span></button>
+                  <button aria-expanded={isMonthListOpen} aria-label="월 목록 열기" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-left text-lg font-bold text-slate-900" onClick={() => setIsMonthListOpen((open) => !open)} type="button">{draftMonth}월</button>
                   {isMonthListOpen && (
                     <div aria-label="월 선택지" className="absolute bottom-full z-10 mb-2 max-h-64 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl" role="listbox">
                       {Array.from({ length: 12 }, (_, index) => index + 1).map((value) => {

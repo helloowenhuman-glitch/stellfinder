@@ -51,6 +51,14 @@ test('uses a compact year field and a rounded month option list', () => {
   expect(screen.getByRole('listbox', { name: '월 선택지' })).toHaveClass('rounded-xl')
 })
 
+test('shows the month picker opener without a trailing arrow glyph', () => {
+  render(<CalendarPage />)
+
+  fireEvent.click(screen.getByRole('button', { name: '월 선택 열기' }))
+
+  expect(screen.getByRole('button', { name: '월 목록 열기' })).not.toHaveTextContent('⌄')
+})
+
 test('loads events from the public events API', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
     ok: true,
