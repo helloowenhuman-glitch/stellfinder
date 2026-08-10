@@ -14,11 +14,19 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  let candidates
+
   try {
-    const candidates = parseInboundPayload(await request.json())
+    candidates = parseInboundPayload(await request.json())
+  } catch {
+    return Response.json({ error: 'Invalid request payload' }, { status: 400 })
+  }
+
+  try {
     const result = await ingestCandidates(candidates, createSupabaseEventWriter())
     return Response.json({ received: candidates.length, ...result })
   } catch {
-    return Response.json({ error: 'Invalid request payload or event storage failure' }, { status: 400 })
+    console.error('Event storage failed')
+    return Response.json({ error: 'Event storage failure' }, { status: 500 })
   }
 }
