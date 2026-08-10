@@ -66,7 +66,7 @@ export function MonthGrid({ year, monthIndex, events, onSelectEvent, onSelectDat
                 const weekday = date.getDay()
 
                 return (
-                  <button aria-label={`${dateKey} 일정 열기`} className="min-h-32 border-r border-slate-200 p-2 text-left last:border-r-0" key={dateKey} onClick={() => onSelectDate?.(dateKey)} type="button">
+                  <button aria-label={`${dateKey} 일정 열기`} className="flex min-h-32 items-start border-r border-slate-200 p-2 text-left last:border-r-0" key={dateKey} onClick={() => onSelectDate?.(dateKey)} type="button">
                     <time className={weekday === 0 ? 'text-sm font-semibold text-rose-500' : weekday === 6 ? 'text-sm font-semibold text-blue-600' : inCurrentMonth ? 'text-sm font-semibold text-slate-700' : 'text-sm text-slate-300'} dateTime={dateKey}>{date.getDate()}</time>
                   </button>
                 )

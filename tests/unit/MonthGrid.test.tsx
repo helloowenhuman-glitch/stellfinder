@@ -53,3 +53,11 @@ test('renders each weekly period bar with rounded ends and a centered title', ()
   expect(eventBars[1]).toHaveStyle({ gridColumn: '1 / span 1' })
   expect(eventBars[1]).toHaveClass('rounded-md', 'text-center')
 })
+
+test('pins a calendar date to the top of its clickable cell', () => {
+  render(<MonthGrid year={2026} monthIndex={7} events={[]} onSelectEvent={() => undefined} />)
+
+  const dateCell = screen.getByRole('button', { name: '2026-08-02 일정 열기' })
+
+  expect(dateCell).toHaveClass('flex', 'items-start')
+})
