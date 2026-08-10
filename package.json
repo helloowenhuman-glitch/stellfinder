@@ -9,7 +9,8 @@
     "lint": "eslint app lib tests",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "submit:events": "node scripts/submit-events.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.2",
