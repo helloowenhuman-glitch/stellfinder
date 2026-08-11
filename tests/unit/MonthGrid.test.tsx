@@ -4,6 +4,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
 import { MonthGrid } from '@/components/calendar/MonthGrid'
 import type { EventRecord } from '@/lib/domain'
+import type { MemberBirthday } from '@/lib/member-birthdays'
 
 afterEach(cleanup)
 
@@ -60,4 +61,20 @@ test('pins a calendar date to the top of its clickable cell', () => {
   const dateCell = screen.getByRole('button', { name: '2026-08-02 일정 열기' })
 
   expect(dateCell).toHaveClass('flex', 'items-start')
+})
+
+test('renders a rounded member-color birthday badge on its date', () => {
+  const huyaBirthday: MemberBirthday = {
+    member: '사키하네 후야',
+    month: 7,
+    day: 7,
+    profileUrl: 'https://stellive.me/huya',
+  }
+
+  render(<MonthGrid birthdays={[huyaBirthday]} year={2026} monthIndex={6} events={[]} onSelectEvent={() => undefined} onSelectBirthday={() => undefined} />)
+
+  const birthdayBadge = screen.getByRole('button', { name: '사키하네 후야 생일' })
+
+  expect(birthdayBadge).toHaveClass('rounded-full')
+  expect(birthdayBadge).toHaveStyle({ color: '#6847B3' })
 })

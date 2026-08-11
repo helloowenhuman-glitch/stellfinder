@@ -1,5 +1,7 @@
 import type { EventRecord } from '@/lib/domain'
 import { getCalendarEventTitle, getKoreaDateKey, getMonthGrid, toDateKey } from '@/lib/calendar'
+import { MEMBER_COLORS } from '@/lib/member-colors'
+import type { MemberBirthday } from '@/lib/member-birthdays'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -7,7 +9,9 @@ interface MonthGridProps {
   year: number
   monthIndex: number
   events: EventRecord[]
+  birthdays?: MemberBirthday[]
   onSelectEvent: (event: EventRecord) => void
+  onSelectBirthday?: (birthday: MemberBirthday) => void
   onSelectDate?: (dateKey: string) => void
   todayKey?: string
 }
@@ -16,6 +20,11 @@ interface WeekEventSegment {
   event: EventRecord
   startColumn: number
   span: number
+}
+
+interface WeekBirthdaySegment {
+  birthday: MemberBirthday
+  column: number
 }
 
 function getWeekEventSegments(events: EventRecord[], week: Date[]): WeekEventSegment[] {
@@ -43,7 +52,15 @@ function getWeekEventSegments(events: EventRecord[], week: Date[]): WeekEventSeg
   })
 }
 
-export function MonthGrid({ year, monthIndex, events, onSelectEvent, onSelectDate, todayKey = getKoreaDateKey() }: MonthGridProps) {
+function getWeekBirthdaySegments(birthdays: MemberBirthday[], week: Date[]): WeekBirthdaySegment[] {
+  return birthdays.flatMap((birthday) => {
+    const dayIndex = week.findIndex((date) => date.getMonth() + 1 === birthday.month && date.getDate() === birthday.day)
+
+    return dayIndex === -1 ? [] : [{ birthday, column: dayIndex + 1 }]
+  })
+}
+
+export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEvent, onSelectBirthday, onSelectDate, todayKey = getKoreaDateKey() }: MonthGridProps) {
   const dates = getMonthGrid(year, monthIndex)
   const weeks = Array.from({ length: dates.length / 7 }, (_, index) => dates.slice(index * 7, index * 7 + 7))
 
@@ -57,6 +74,7 @@ export function MonthGrid({ year, monthIndex, events, onSelectEvent, onSelectDat
       <div>
         {weeks.map((week) => {
           const segments = getWeekEventSegments(events, week)
+          const birthdaySegments = getWeekBirthdaySegments(birthdays, week)
 
           return (
             <div className="relative grid grid-cols-7 border-b border-slate-200 last:border-b-0" key={toDateKey(week[0])}>
@@ -83,6 +101,24 @@ export function MonthGrid({ year, monthIndex, events, onSelectEvent, onSelectDat
                     {getCalendarEventTitle(segment.event, todayKey)}
                   </button>
                 ))}
+              </div>
+              <div className="pointer-events-none absolute inset-x-2 grid grid-cols-7 auto-rows-min gap-y-1" style={{ top: `calc(2.25rem + ${segments.length * 1.75}rem)` }}>
+                {birthdaySegments.map(({ birthday, column }) => {
+                  const color = MEMBER_COLORS[birthday.member]
+
+                  return (
+                    <button
+                      aria-label={`${birthday.member} 생일`}
+                      className="pointer-events-auto w-full truncate rounded-full border px-2 py-1 text-left text-xs font-semibold"
+                      key={birthday.member}
+                      onClick={() => onSelectBirthday?.(birthday)}
+                      style={{ backgroundColor: `${color}15`, borderColor: `${color}55`, color, gridColumn: column }}
+                      type="button"
+                    >
+                      {birthday.member} 생일
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )
