@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { MonthGrid } from '@/components/calendar/MonthGrid'
 import { getCalendarEventTitle, getDdayLabel, getKoreaDateKey, isUpcomingWithinFifteenDays } from '@/lib/calendar'
 import type { EventCategory, EventRecord } from '@/lib/domain'
+import { MEMBER_BIRTHDAYS, type MemberBirthday } from '@/lib/member-birthdays'
 import { MEMBER_COLORS, type Participant } from '@/lib/member-colors'
 
 const CATEGORY_LABELS: Record<'all' | EventCategory, string> = {
@@ -81,6 +82,22 @@ function EventDetailDialog({ event, onClose, todayKey }: { event: EventRecord; o
   )
 }
 
+function BirthdayDetailDialog({ birthday, onClose }: { birthday: MemberBirthday; onClose: () => void }) {
+  const color = MEMBER_COLORS[birthday.member]
+
+  return (
+    <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true" aria-label={`${birthday.member} 생일 상세`}>
+      <section className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+        <button aria-label="닫기" className="float-right text-slate-500" onClick={onClose} type="button">×</button>
+        <p className="text-sm font-semibold" style={{ color }}>생일</p>
+        <h2 className="mt-2 text-xl font-bold">{birthday.member} 생일</h2>
+        <p className="mt-3 text-sm text-slate-600">{birthday.month}월 {birthday.day}일</p>
+        <a className="mt-5 inline-flex rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold" href={birthday.profileUrl} rel="noreferrer" style={{ color }} target="_blank">공식 프로필 보기</a>
+      </section>
+    </div>
+  )
+}
+
 export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps) {
   const [month, setMonth] = useState(FIRST_CALENDAR_MONTH)
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false)
@@ -93,11 +110,15 @@ export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps
   const [isMemberMenuOpen, setIsMemberMenuOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<EventRecord | null>(null)
+  const [selectedBirthday, setSelectedBirthday] = useState<MemberBirthday | null>(null)
   const [events, setEvents] = useState<EventRecord[]>(SAMPLE_EVENTS)
   const filteredEvents = useMemo(() => events.filter((event) => (
     (category === 'all' || event.category === category)
     && (member === 'all' || event.participants.includes(member))
   )), [category, events, member])
+  const visibleBirthdays = useMemo(() => MEMBER_BIRTHDAYS.filter((birthday) => (
+    member === 'all' || birthday.member === member
+  )), [member])
   const upcomingEvents = useMemo(() => filteredEvents
     .filter((event) => isUpcomingWithinFifteenDays(event, todayKey))
     .sort((left, right) => upcomingDateKey(left).localeCompare(upcomingDateKey(right))), [filteredEvents, todayKey])
@@ -172,7 +193,7 @@ export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps
           </div>
         </nav>
         {view === 'calendar' ? (
-          <MonthGrid year={month.getFullYear()} monthIndex={month.getMonth()} events={filteredEvents} onSelectDate={setSelectedDate} onSelectEvent={setSelectedEvent} todayKey={todayKey} />
+          <MonthGrid birthdays={visibleBirthdays} year={month.getFullYear()} monthIndex={month.getMonth()} events={filteredEvents} onSelectBirthday={setSelectedBirthday} onSelectDate={setSelectedDate} onSelectEvent={setSelectedEvent} todayKey={todayKey} />
         ) : (
           <section aria-label="다가오는 일정" className="rounded-xl border border-slate-200 bg-white p-4">
             {upcomingEvents.length === 0 ? <p className="text-sm text-slate-500">앞으로 15일 안에 챙길 일정이 없습니다.</p> : (
@@ -217,6 +238,7 @@ export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps
         )}
         {selectedDate && <div className="fixed inset-0 z-20 flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true" aria-label={`${selectedDate} 일정`}><section className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"><button className="float-right text-slate-500" onClick={() => setSelectedDate(null)} type="button" aria-label="닫기">×</button><h2 className="mb-4 text-xl font-bold">{selectedDate.replaceAll('-', '.')} 일정</h2>{selectedDateEvents.length === 0 ? <p className="text-sm text-slate-500">등록된 행사가 없습니다.</p> : <div className="space-y-2">{selectedDateEvents.map((event) => <EventButton event={event} key={event.id} onSelect={(selected) => { setSelectedDate(null); setSelectedEvent(selected) }} todayKey={todayKey} />)}</div>}</section></div>}
         {selectedEvent && <EventDetailDialog event={selectedEvent} onClose={() => setSelectedEvent(null)} todayKey={todayKey} />}
+        {selectedBirthday && <BirthdayDetailDialog birthday={selectedBirthday} onClose={() => setSelectedBirthday(null)} />}
       </div>
     </main>
   )

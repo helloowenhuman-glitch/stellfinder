@@ -161,3 +161,24 @@ test('opens a date agenda before the event detail actions', async () => {
   expect(screen.getByRole('link', { name: '구매하기' })).toHaveAttribute('href', 'https://shop.example.jp/soon-sale')
   expect(screen.getByRole('link', { name: '공식 공지 보기' })).toHaveAttribute('href', 'https://stellive.me/news/soon-sale')
 })
+
+test('keeps birthday badges visible across category filters and limits them to the chosen member', () => {
+  render(<CalendarPage />)
+
+  fireEvent.click(screen.getByRole('button', { name: '굿즈' }))
+  expect(screen.getByRole('button', { name: '하나코 나나 생일' })).toBeVisible()
+
+  fireEvent.click(screen.getByRole('button', { name: '멤버: 전체' }))
+  fireEvent.click(screen.getByRole('button', { name: '하나코 나나' }))
+
+  expect(screen.getByRole('button', { name: '하나코 나나 생일' })).toBeVisible()
+})
+
+test('opens the official profile from a birthday badge', () => {
+  render(<CalendarPage />)
+
+  fireEvent.click(screen.getByRole('button', { name: '하나코 나나 생일' }))
+
+  expect(screen.getByRole('dialog', { name: '하나코 나나 생일 상세' })).toBeVisible()
+  expect(screen.getByRole('link', { name: '공식 프로필 보기' })).toHaveAttribute('href', 'https://stellive.me/nana')
+})
