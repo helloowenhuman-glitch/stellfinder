@@ -84,7 +84,7 @@ test('marks the supplied today key with a navy date marker', () => {
 
   expect(screen.getByText('12')).toHaveClass('bg-[#102B52]', 'text-white')
   expect(screen.getByText('12')).toHaveClass('relative', 'z-0')
-  expect(screen.getByText('STELLIVE 팝업스토어').parentElement).toHaveClass('z-10')
+  expect(screen.getByText('STELLIVE 팝업스토어').parentElement).toHaveClass('top-7', 'z-10')
 })
 
 test('opens the event start-date agenda when selecting a schedule bar', () => {

@@ -129,7 +129,7 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
                   </button>
                 )
               })}
-              <div className="pointer-events-none absolute inset-x-2 top-9 z-10 grid grid-cols-7 auto-rows-min gap-y-1">
+              <div className="pointer-events-none absolute inset-x-2 top-7 z-10 grid grid-cols-7 auto-rows-min gap-y-1">
                 {visibleSegments.map((segment) => (
                   <button
                     className="pointer-events-auto w-full truncate rounded-md border px-2 py-1 text-center text-xs font-semibold"
