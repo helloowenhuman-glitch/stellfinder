@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from '@testing-library/react'
-import { afterEach, expect, test } from 'vitest'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, expect, test, vi } from 'vitest'
 import { MonthGrid } from '@/components/calendar/MonthGrid'
 import type { EventRecord } from '@/lib/domain'
 import type { MemberBirthday } from '@/lib/member-birthdays'
@@ -80,9 +80,23 @@ test('renders a rounded member-color birthday badge on its date', () => {
 })
 
 test('marks the supplied today key with a navy date marker', () => {
-  render(<MonthGrid year={2026} monthIndex={7} events={[]} onSelectEvent={() => undefined} todayKey="2026-08-12" />)
+  render(<MonthGrid year={2026} monthIndex={7} events={[popupEvent]} onSelectEvent={() => undefined} todayKey="2026-08-12" />)
 
   expect(screen.getByText('12')).toHaveClass('bg-[#102B52]', 'text-white')
+  expect(screen.getByText('12')).toHaveClass('relative', 'z-0')
+  expect(screen.getByText('STELLIVE 팝업스토어').parentElement).toHaveClass('z-10')
+})
+
+test('opens the event start-date agenda when selecting a schedule bar', () => {
+  const onSelectDate = vi.fn()
+  const onSelectEvent = vi.fn()
+
+  render(<MonthGrid year={2026} monthIndex={7} events={[popupEvent]} onSelectDate={onSelectDate} onSelectEvent={onSelectEvent} />)
+
+  fireEvent.click(screen.getByText('STELLIVE 팝업스토어'))
+
+  expect(onSelectDate).toHaveBeenCalledWith('2026-08-12')
+  expect(onSelectEvent).not.toHaveBeenCalled()
 })
 
 test('shows three event rows and an overflow count for a dense date', () => {

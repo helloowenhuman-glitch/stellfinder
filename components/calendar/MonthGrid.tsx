@@ -114,7 +114,7 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
                 const inCurrentMonth = date.getMonth() === monthIndex
                 const weekday = date.getDay()
                 const dateClassName = dateKey === todayKey
-                  ? 'inline-flex h-8 min-w-8 items-center justify-center rounded-md bg-[#102B52] px-1 text-sm font-semibold text-white'
+                  ? 'relative z-0 inline-flex h-8 min-w-8 items-center justify-center rounded-md bg-[#102B52] px-1 text-sm font-semibold text-white'
                   : weekday === 0
                     ? 'text-sm font-semibold text-rose-500'
                     : weekday === 6
@@ -129,12 +129,12 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
                   </button>
                 )
               })}
-              <div className="pointer-events-none absolute inset-x-2 top-9 grid grid-cols-7 auto-rows-min gap-y-1">
+              <div className="pointer-events-none absolute inset-x-2 top-9 z-10 grid grid-cols-7 auto-rows-min gap-y-1">
                 {visibleSegments.map((segment) => (
                   <button
                     className="pointer-events-auto w-full truncate rounded-md border px-2 py-1 text-center text-xs font-semibold"
                     key={`${segment.event.id}-${toDateKey(week[0])}`}
-                    onClick={() => onSelectEvent(segment.event)}
+                    onClick={() => onSelectDate?.(segment.event.startAt.slice(0, 10))}
                     style={{ backgroundColor: `${segment.event.displayColor}20`, borderColor: `${segment.event.displayColor}55`, color: segment.event.displayColor, gridColumn: `${segment.startColumn} / span ${segment.span}`, gridRow: segment.row + 1 }}
                     type="button"
                   >

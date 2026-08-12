@@ -84,15 +84,16 @@ function EventDetailDialog({ event, onClose, todayKey }: { event: EventRecord; o
 
 function BirthdayDetailDialog({ birthday, onClose }: { birthday: MemberBirthday; onClose: () => void }) {
   const color = MEMBER_COLORS[birthday.member]
+  const namuWikiUrl = `https://namu.wiki/w/${encodeURIComponent(birthday.member)}`
 
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true" aria-label={`${birthday.member} 생일 상세`}>
       <section className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
         <button aria-label="닫기" className="float-right text-slate-500" onClick={onClose} type="button">×</button>
         <p className="text-sm font-semibold" style={{ color }}>생일</p>
-        <h2 className="mt-2 text-xl font-bold">{birthday.member} 생일</h2>
+        <h2 className="mt-2 text-xl font-bold">{birthday.member}의 생일입니다.</h2>
         <p className="mt-3 text-sm text-slate-600">{birthday.month}월 {birthday.day}일</p>
-        <a className="mt-5 inline-flex rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold" href={birthday.profileUrl} rel="noreferrer" style={{ color }} target="_blank">공식 프로필 보기</a>
+        <a className="mt-5 inline-flex rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold" href={namuWikiUrl} rel="noreferrer" style={{ color }} target="_blank">나무위키에서 보기</a>
       </section>
     </div>
   )
@@ -123,6 +124,9 @@ export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps
     .filter((event) => isUpcomingWithinFifteenDays(event, todayKey))
     .sort((left, right) => upcomingDateKey(left).localeCompare(upcomingDateKey(right))), [filteredEvents, todayKey])
   const selectedDateEvents = selectedDate ? filteredEvents.filter((event) => occursOn(event, selectedDate)) : []
+  const selectedDateBirthdays = selectedDate ? visibleBirthdays.filter((birthday) => (
+    `${String(birthday.month).padStart(2, '0')}-${String(birthday.day).padStart(2, '0')}` === selectedDate.slice(5)
+  )) : []
 
   useEffect(() => {
     const monthKey = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`
@@ -236,7 +240,7 @@ export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps
             </section>
           </div>
         )}
-        {selectedDate && <div className="fixed inset-0 z-20 flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true" aria-label={`${selectedDate} 일정`}><section className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"><button className="float-right text-slate-500" onClick={() => setSelectedDate(null)} type="button" aria-label="닫기">×</button><h2 className="mb-4 text-xl font-bold">{selectedDate.replaceAll('-', '.')} 일정</h2>{selectedDateEvents.length === 0 ? <p className="text-sm text-slate-500">등록된 행사가 없습니다.</p> : <div className="space-y-2">{selectedDateEvents.map((event) => <EventButton event={event} key={event.id} onSelect={(selected) => { setSelectedDate(null); setSelectedEvent(selected) }} todayKey={todayKey} />)}</div>}</section></div>}
+        {selectedDate && <div className="fixed inset-0 z-20 flex items-center justify-center bg-slate-950/40 p-4" role="dialog" aria-modal="true" aria-label={`${selectedDate} 일정`}><section className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"><button className="float-right text-slate-500" onClick={() => setSelectedDate(null)} type="button" aria-label="닫기">×</button><h2 className="mb-4 text-xl font-bold">{selectedDate.replaceAll('-', '.')} 일정</h2>{selectedDateEvents.length === 0 && selectedDateBirthdays.length === 0 ? <p className="text-sm text-slate-500">등록된 행사가 없습니다.</p> : <div className="space-y-2">{selectedDateEvents.map((event) => <EventButton event={event} key={event.id} onSelect={(selected) => { setSelectedDate(null); setSelectedEvent(selected) }} todayKey={todayKey} />)}{selectedDateBirthdays.map((birthday) => { const color = MEMBER_COLORS[birthday.member]; return <button aria-label={`${birthday.member} 생일`} className="w-full truncate rounded-full border px-3 py-2 text-left text-sm font-semibold" key={birthday.member} onClick={() => { setSelectedDate(null); setSelectedBirthday(birthday) }} style={{ backgroundColor: `${color}15`, borderColor: `${color}55`, color }} type="button">{birthday.member} 생일</button> })}</div>}</section></div>}
         {selectedEvent && <EventDetailDialog event={selectedEvent} onClose={() => setSelectedEvent(null)} todayKey={todayKey} />}
         {selectedBirthday && <BirthdayDetailDialog birthday={selectedBirthday} onClose={() => setSelectedBirthday(null)} />}
       </div>

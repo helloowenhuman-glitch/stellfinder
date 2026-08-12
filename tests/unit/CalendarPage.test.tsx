@@ -180,5 +180,34 @@ test('opens the official profile from a birthday badge', () => {
   fireEvent.click(screen.getByRole('button', { name: '하나코 나나 생일' }))
 
   expect(screen.getByRole('dialog', { name: '하나코 나나 생일 상세' })).toBeVisible()
-  expect(screen.getByRole('link', { name: '공식 프로필 보기' })).toHaveAttribute('href', 'https://stellive.me/nana')
+  expect(screen.getByText('하나코 나나의 생일입니다.')).toBeVisible()
+  expect(screen.getByRole('link', { name: '나무위키에서 보기' })).toHaveAttribute('href', 'https://namu.wiki/w/%ED%95%98%EB%82%98%EC%BD%94%20%EB%82%98%EB%82%98')
+})
+
+test('shows birthdays alongside events in a date agenda', () => {
+  render(<CalendarPage />)
+
+  fireEvent.click(screen.getByRole('button', { name: '2026-08-07 일정 열기' }))
+
+  expect(within(screen.getByRole('dialog', { name: '2026-08-07 일정' })).getByRole('button', { name: '하나코 나나 생일' })).toBeVisible()
+})
+
+test('opens a date agenda instead of event detail when selecting a calendar bar', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ events: [{
+      id: 'agenda-bar', title: '일정 바', category: 'goods',
+      startAt: '2026-08-07T00:00:00+09:00', endAt: null, allDay: true,
+      participants: ['사키하네 후야'], displayColor: '#6847B3', location: null,
+      summary: null, sourceUrl: 'https://stellive.me/news/agenda-bar',
+      sourceChannel: 'official-site', sourcePublishedAt: null, status: 'verified',
+    }] }),
+  }))
+
+  render(<CalendarPage />)
+
+  fireEvent.click(await screen.findByText('일정 바'))
+
+  expect(screen.getByRole('dialog', { name: '2026-08-07 일정' })).toBeVisible()
+  expect(screen.queryByRole('dialog', { name: '일정 바 상세' })).not.toBeInTheDocument()
 })
