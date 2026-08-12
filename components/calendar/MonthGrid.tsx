@@ -28,10 +28,6 @@ interface WeekBirthdaySegment {
   column: number
 }
 
-interface VisibleWeekEventSegment extends WeekEventSegment {
-  row: number
-}
-
 function getWeekEventSegments(events: EventRecord[], week: Date[]): WeekEventSegment[] {
   const weekStart = toDateKey(week[0])
   const weekEnd = toDateKey(week[week.length - 1])
@@ -81,35 +77,6 @@ function getWeekBirthdaySegments(birthdays: MemberBirthday[], week: Date[]): Wee
   })
 }
 
-function getVisibleWeekEventSegments(segments: WeekEventSegment[]): VisibleWeekEventSegment[] {
-  const visibleSegments: VisibleWeekEventSegment[] = []
-
-  segments.forEach((segment) => {
-    let visiblePart: VisibleWeekEventSegment | undefined
-
-    for (let column = segment.startColumn; column < segment.startColumn + segment.span; column += 1) {
-      const eventsOnDate = segments.filter((candidate) => (
-        column >= candidate.startColumn
-        && column < candidate.startColumn + candidate.span
-      ))
-      const row = eventsOnDate.findIndex((candidate) => candidate.event.id === segment.event.id)
-
-      if (row < 3) {
-        if (visiblePart && visiblePart.row === row && visiblePart.startColumn + visiblePart.span === column) {
-          visiblePart.span += 1
-        } else {
-          visiblePart = { ...segment, startColumn: column, span: 1, row }
-          visibleSegments.push(visiblePart)
-        }
-      } else {
-        visiblePart = undefined
-      }
-    }
-  })
-
-  return visibleSegments
-}
-
 export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEvent, onSelectBirthday, onSelectDate, todayKey = getKoreaDateKey() }: MonthGridProps) {
   const dates = getMonthGrid(year, monthIndex)
   const weeks = Array.from({ length: dates.length / 7 }, (_, index) => dates.slice(index * 7, index * 7 + 7))
@@ -125,7 +92,7 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
         {weeks.map((week) => {
           const segments = getWeekEventSegments(events, week)
           const birthdaySegments = getWeekBirthdaySegments(birthdays, week)
-          const visibleSegments = getVisibleWeekEventSegments(segments)
+          const visibleSegments = segments.filter((segment) => segment.row < 3)
           const visibleEventRows = visibleSegments.length === 0 ? 0 : Math.max(...visibleSegments.map((segment) => segment.row + 1))
           const eventCountByDate = new Map(week.map((date, column) => [
             toDateKey(date),
@@ -166,7 +133,7 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
                 {visibleSegments.map((segment) => (
                   <button
                     className="pointer-events-auto w-full truncate rounded-md border px-2 py-1 text-center text-xs font-semibold"
-                    key={`${segment.event.id}-${toDateKey(week[0])}-${segment.startColumn}-${segment.span}`}
+                    key={`${segment.event.id}-${toDateKey(week[0])}`}
                     onClick={() => onSelectEvent(segment.event)}
                     style={{ backgroundColor: `${segment.event.displayColor}20`, borderColor: `${segment.event.displayColor}55`, color: segment.event.displayColor, gridColumn: `${segment.startColumn} / span ${segment.span}`, gridRow: segment.row + 1 }}
                     type="button"

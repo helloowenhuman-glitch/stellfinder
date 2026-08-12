@@ -20,7 +20,7 @@ Make the current day immediately recognizable and prevent dense calendar cells f
 
 ## Event layout
 
-- Preserve the existing continuous weekly bars where an event is visible; split a bar only when it must be hidden on a date that already has three events.
+- Preserve each event's initial weekly row and continuous bar; do not move an event upward to fill a gap after an earlier event ends.
 - Compute each segment's visual row so a segment that overlaps another segment horizontally is placed on a separate row.
 - Keep the week row height fixed by rendering no more than three event rows. Birthday badges render beneath the visible event rows without increasing the event-row limit.
 

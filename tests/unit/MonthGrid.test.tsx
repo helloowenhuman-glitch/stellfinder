@@ -158,18 +158,16 @@ test('hides the fourth item without adding a dense-cell gradient', () => {
   expect(container.querySelector('[class*="bg-gradient-to"]')).not.toBeInTheDocument()
 })
 
-test('shows an event on a later date when that date has fewer than three items', () => {
+test('keeps an event in its initial row after an earlier event ends', () => {
   const events = [
-    { ...popupEvent, id: 'spanning-a', title: 'Spanning A', startAt: '2026-08-07T00:00:00+09:00', endAt: '2026-08-08T23:59:59+09:00' },
-    { ...popupEvent, id: 'one-day-b', title: 'One-day B', startAt: '2026-08-07T00:00:00+09:00', endAt: null },
-    { ...popupEvent, id: 'one-day-c', title: 'One-day C', startAt: '2026-08-07T00:00:00+09:00', endAt: null },
-    { ...popupEvent, id: 'spanning-d', title: 'Spanning D', startAt: '2026-08-07T00:00:00+09:00', endAt: '2026-08-08T23:59:59+09:00' },
+    { ...popupEvent, id: 'one-day-a', title: 'One-day A', startAt: '2026-08-07T00:00:00+09:00', endAt: null },
+    { ...popupEvent, id: 'spanning-b', title: 'Spanning B', startAt: '2026-08-07T00:00:00+09:00', endAt: '2026-08-08T23:59:59+09:00' },
   ]
 
   render(<MonthGrid year={2026} monthIndex={7} events={events} onSelectEvent={() => undefined} />)
 
-  const laterSegment = screen.getByText('Spanning D')
+  const spanningEvents = screen.getAllByText('Spanning B')
 
-  expect(laterSegment).toHaveStyle({ gridColumn: '7 / span 1', gridRow: '2' })
-  expect(screen.getByLabelText('2026-08-07 hidden events 1')).toBeVisible()
+  expect(spanningEvents).toHaveLength(1)
+  expect(spanningEvents[0]).toHaveStyle({ gridColumn: '6 / span 2', gridRow: '2' })
 })
