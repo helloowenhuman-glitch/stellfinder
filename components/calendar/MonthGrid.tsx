@@ -20,6 +20,7 @@ interface WeekEventSegment {
   event: EventRecord
   startColumn: number
   span: number
+  row: number
 }
 
 interface WeekBirthdaySegment {
@@ -31,7 +32,7 @@ function getWeekEventSegments(events: EventRecord[], week: Date[]): WeekEventSeg
   const weekStart = toDateKey(week[0])
   const weekEnd = toDateKey(week[week.length - 1])
 
-  return events.flatMap((event) => {
+  const segments = events.flatMap((event) => {
     const start = event.startAt.slice(0, 10)
     const end = event.endAt?.slice(0, 10) ?? start
 
@@ -49,6 +50,22 @@ function getWeekEventSegments(events: EventRecord[], week: Date[]): WeekEventSeg
       startColumn: startIndex + 1,
       span: endIndex - startIndex + 1,
     }]
+  })
+
+  const occupiedColumnsByRow: boolean[][] = []
+
+  return segments.map((segment) => {
+    const columns = Array.from({ length: segment.span }, (_, index) => segment.startColumn - 1 + index)
+    let row = occupiedColumnsByRow.findIndex((occupied) => columns.every((column) => !occupied[column]))
+
+    if (row === -1) {
+      row = occupiedColumnsByRow.length
+      occupiedColumnsByRow.push(Array(7).fill(false))
+    }
+
+    columns.forEach((column) => { occupiedColumnsByRow[row][column] = true })
+
+    return { ...segment, row }
   })
 }
 
@@ -75,6 +92,23 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
         {weeks.map((week) => {
           const segments = getWeekEventSegments(events, week)
           const birthdaySegments = getWeekBirthdaySegments(birthdays, week)
+          const visibleSegments = segments.filter((segment) => segment.row < 3)
+          const visibleEventRows = Math.min(3, segments.length)
+          const eventCountByDate = new Map(week.map((date, column) => [
+            toDateKey(date),
+            segments.filter((segment) => (
+              column + 1 >= segment.startColumn
+              && column + 1 < segment.startColumn + segment.span
+            )).length,
+          ]))
+          const hiddenCountByDate = new Map(week.map((date, column) => [
+            toDateKey(date),
+            segments.filter((segment) => (
+              segment.row >= 3
+              && column + 1 >= segment.startColumn
+              && column + 1 < segment.startColumn + segment.span
+            )).length + (birthdaySegments.some(({ column: birthdayColumn }) => birthdayColumn === column + 1) && (eventCountByDate.get(toDateKey(date)) ?? 0) >= 3 ? 1 : 0),
+          ]))
 
           return (
             <div className="relative grid grid-cols-7 border-b border-slate-200 last:border-b-0" key={toDateKey(week[0])}>
@@ -82,28 +116,50 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
                 const dateKey = toDateKey(date)
                 const inCurrentMonth = date.getMonth() === monthIndex
                 const weekday = date.getDay()
+                const dateClassName = dateKey === todayKey
+                  ? 'inline-flex h-8 min-w-8 items-center justify-center rounded-md bg-[#102B52] px-1 text-sm font-semibold text-white'
+                  : weekday === 0
+                    ? 'text-sm font-semibold text-rose-500'
+                    : weekday === 6
+                      ? 'text-sm font-semibold text-blue-600'
+                      : inCurrentMonth
+                        ? 'text-sm font-semibold text-slate-700'
+                        : 'text-sm text-slate-300'
 
                 return (
                   <button aria-label={`${dateKey} 일정 열기`} className="flex min-h-32 items-start border-r border-slate-200 p-2 text-left last:border-r-0" key={dateKey} onClick={() => onSelectDate?.(dateKey)} type="button">
-                    <time className={weekday === 0 ? 'text-sm font-semibold text-rose-500' : weekday === 6 ? 'text-sm font-semibold text-blue-600' : inCurrentMonth ? 'text-sm font-semibold text-slate-700' : 'text-sm text-slate-300'} dateTime={dateKey}>{date.getDate()}</time>
+                    <time className={dateClassName} dateTime={dateKey}>{date.getDate()}</time>
                   </button>
                 )
               })}
               <div className="pointer-events-none absolute inset-x-2 top-9 grid grid-cols-7 auto-rows-min gap-y-1">
-                {segments.map((segment) => (
+                {visibleSegments.map((segment) => (
                   <button
                     className="pointer-events-auto w-full truncate rounded-md border px-2 py-1 text-center text-xs font-semibold"
                     key={`${segment.event.id}-${toDateKey(week[0])}`}
                     onClick={() => onSelectEvent(segment.event)}
-                    style={{ backgroundColor: `${segment.event.displayColor}20`, borderColor: `${segment.event.displayColor}55`, color: segment.event.displayColor, gridColumn: `${segment.startColumn} / span ${segment.span}` }}
+                    style={{ backgroundColor: `${segment.event.displayColor}20`, borderColor: `${segment.event.displayColor}55`, color: segment.event.displayColor, gridColumn: `${segment.startColumn} / span ${segment.span}`, gridRow: segment.row + 1 }}
                     type="button"
                   >
                     {getCalendarEventTitle(segment.event, todayKey)}
                   </button>
                 ))}
               </div>
-              <div className="pointer-events-none absolute inset-x-2 grid grid-cols-7 auto-rows-min gap-y-1" style={{ top: `calc(2.25rem + ${segments.length * 1.75}rem)` }}>
-                {birthdaySegments.map(({ birthday, column }) => {
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 grid grid-cols-7">
+                {week.map((date, column) => {
+                  const dateKey = toDateKey(date)
+                  const hiddenCount = hiddenCountByDate.get(dateKey) ?? 0
+
+                  return hiddenCount > 0 ? (
+                    <div className="relative h-10" key={`${dateKey}-overflow`} style={{ gridColumn: column + 1 }}>
+                      <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-white via-white/90 to-transparent" />
+                      <span aria-label={`${dateKey} hidden events ${hiddenCount}`} className="absolute bottom-2 right-2 inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-[#CBD5E1] bg-[#E2E8F0] px-2 text-xs font-bold text-[#475569]">+{hiddenCount}</span>
+                    </div>
+                  ) : null
+                })}
+              </div>
+              <div className="pointer-events-none absolute inset-x-2 grid grid-cols-7 auto-rows-min gap-y-1" style={{ top: `calc(2.25rem + ${visibleEventRows * 1.75}rem)` }}>
+                {birthdaySegments.filter(({ column }) => (eventCountByDate.get(toDateKey(week[column - 1])) ?? 0) < 3).map(({ birthday, column }) => {
                   const color = MEMBER_COLORS[birthday.member]
 
                   return (

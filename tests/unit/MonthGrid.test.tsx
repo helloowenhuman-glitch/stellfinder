@@ -78,3 +78,48 @@ test('renders a rounded member-color birthday badge on its date', () => {
   expect(birthdayBadge).toHaveClass('rounded-full')
   expect(birthdayBadge).toHaveStyle({ color: '#6847B3' })
 })
+
+test('marks the supplied today key with a navy date marker', () => {
+  render(<MonthGrid year={2026} monthIndex={7} events={[]} onSelectEvent={() => undefined} todayKey="2026-08-12" />)
+
+  expect(screen.getByText('12')).toHaveClass('bg-[#102B52]', 'text-white')
+})
+
+test('shows three event rows and an overflow count for a dense date', () => {
+  const events = Array.from({ length: 4 }, (_, index) => ({
+    ...popupEvent,
+    id: `dense-${index}`,
+    title: `Dense event ${index + 1}`,
+    startAt: '2026-08-07T00:00:00+09:00',
+    endAt: null,
+  }))
+
+  render(<MonthGrid year={2026} monthIndex={7} events={events} onSelectEvent={() => undefined} />)
+
+  expect(screen.getByText('Dense event 1')).toBeVisible()
+  expect(screen.getByText('Dense event 2')).toBeVisible()
+  expect(screen.getByText('Dense event 3')).toBeVisible()
+  expect(screen.queryByText('Dense event 4')).not.toBeInTheDocument()
+  expect(screen.getByLabelText('2026-08-07 hidden events 1')).toHaveClass('bg-[#E2E8F0]', 'text-[#475569]')
+})
+
+test('counts a birthday as the fourth calendar item on its date', () => {
+  const events = Array.from({ length: 3 }, (_, index) => ({
+    ...popupEvent,
+    id: `birthday-dense-${index}`,
+    title: `Birthday dense event ${index + 1}`,
+    startAt: '2026-08-07T00:00:00+09:00',
+    endAt: null,
+  }))
+  const birthday: MemberBirthday = {
+    member: '사키하네 후야',
+    month: 8,
+    day: 7,
+    profileUrl: 'https://stellive.me/huya',
+  }
+
+  render(<MonthGrid birthdays={[birthday]} year={2026} monthIndex={7} events={events} onSelectBirthday={() => undefined} onSelectEvent={() => undefined} />)
+
+  expect(screen.queryByRole('button', { name: '사키하네 후야 생일' })).not.toBeInTheDocument()
+  expect(screen.getByLabelText('2026-08-07 hidden events 1')).toBeVisible()
+})
