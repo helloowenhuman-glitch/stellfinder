@@ -144,7 +144,7 @@ test('uses only the rendered event rows when placing birthdays', () => {
   expect(screen.getByRole('button', { name: '사키하네 후야 생일' }).parentElement).toHaveStyle({ top: '64px' })
 })
 
-test('fades dense cells at both edges behind the overflow badge', () => {
+test('hides the fourth item without adding a dense-cell gradient', () => {
   const events = Array.from({ length: 4 }, (_, index) => ({
     ...popupEvent,
     id: `dense-fade-${index}`,
@@ -154,5 +154,22 @@ test('fades dense cells at both edges behind the overflow badge', () => {
 
   const { container } = render(<MonthGrid year={2026} monthIndex={7} events={events} onSelectEvent={() => undefined} />)
 
-  expect(container.querySelector('.bg-gradient-to-b')).toBeInTheDocument()
+  expect(screen.getByLabelText('2026-08-07 hidden events 1')).toBeVisible()
+  expect(container.querySelector('[class*="bg-gradient-to"]')).not.toBeInTheDocument()
+})
+
+test('shows an event on a later date when that date has fewer than three items', () => {
+  const events = [
+    { ...popupEvent, id: 'spanning-a', title: 'Spanning A', startAt: '2026-08-07T00:00:00+09:00', endAt: '2026-08-08T23:59:59+09:00' },
+    { ...popupEvent, id: 'one-day-b', title: 'One-day B', startAt: '2026-08-07T00:00:00+09:00', endAt: null },
+    { ...popupEvent, id: 'one-day-c', title: 'One-day C', startAt: '2026-08-07T00:00:00+09:00', endAt: null },
+    { ...popupEvent, id: 'spanning-d', title: 'Spanning D', startAt: '2026-08-07T00:00:00+09:00', endAt: '2026-08-08T23:59:59+09:00' },
+  ]
+
+  render(<MonthGrid year={2026} monthIndex={7} events={events} onSelectEvent={() => undefined} />)
+
+  const laterSegment = screen.getByText('Spanning D')
+
+  expect(laterSegment).toHaveStyle({ gridColumn: '7 / span 1', gridRow: '2' })
+  expect(screen.getByLabelText('2026-08-07 hidden events 1')).toBeVisible()
 })
