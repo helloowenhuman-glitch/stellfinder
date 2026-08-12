@@ -123,3 +123,36 @@ test('counts a birthday as the fourth calendar item on its date', () => {
   expect(screen.queryByRole('button', { name: '사키하네 후야 생일' })).not.toBeInTheDocument()
   expect(screen.getByLabelText('2026-08-07 hidden events 1')).toBeVisible()
 })
+
+test('uses only the rendered event rows when placing birthdays', () => {
+  const events = [7, 8, 9, 10].map((day) => ({
+    ...popupEvent,
+    id: `separate-${day}`,
+    title: `Separate event ${day}`,
+    startAt: `2026-08-${day}T00:00:00+09:00`,
+    endAt: null,
+  }))
+  const birthday: MemberBirthday = {
+    member: '사키하네 후야',
+    month: 8,
+    day: 12,
+    profileUrl: 'https://stellive.me/huya',
+  }
+
+  render(<MonthGrid birthdays={[birthday]} year={2026} monthIndex={7} events={events} onSelectBirthday={() => undefined} onSelectEvent={() => undefined} />)
+
+  expect(screen.getByRole('button', { name: '사키하네 후야 생일' }).parentElement).toHaveStyle({ top: '64px' })
+})
+
+test('fades dense cells at both edges behind the overflow badge', () => {
+  const events = Array.from({ length: 4 }, (_, index) => ({
+    ...popupEvent,
+    id: `dense-fade-${index}`,
+    startAt: '2026-08-07T00:00:00+09:00',
+    endAt: null,
+  }))
+
+  const { container } = render(<MonthGrid year={2026} monthIndex={7} events={events} onSelectEvent={() => undefined} />)
+
+  expect(container.querySelector('.bg-gradient-to-b')).toBeInTheDocument()
+})

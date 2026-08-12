@@ -93,7 +93,7 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
           const segments = getWeekEventSegments(events, week)
           const birthdaySegments = getWeekBirthdaySegments(birthdays, week)
           const visibleSegments = segments.filter((segment) => segment.row < 3)
-          const visibleEventRows = Math.min(3, segments.length)
+          const visibleEventRows = visibleSegments.length === 0 ? 0 : Math.max(...visibleSegments.map((segment) => segment.row + 1))
           const eventCountByDate = new Map(week.map((date, column) => [
             toDateKey(date),
             segments.filter((segment) => (
@@ -152,13 +152,14 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
 
                   return hiddenCount > 0 ? (
                     <div className="relative h-10" key={`${dateKey}-overflow`} style={{ gridColumn: column + 1 }}>
+                      <span aria-hidden="true" className="absolute inset-x-0 top-0 h-4 bg-gradient-to-b from-white via-white/90 to-transparent" />
                       <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-white via-white/90 to-transparent" />
                       <span aria-label={`${dateKey} hidden events ${hiddenCount}`} className="absolute bottom-2 right-2 inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-[#CBD5E1] bg-[#E2E8F0] px-2 text-xs font-bold text-[#475569]">+{hiddenCount}</span>
                     </div>
                   ) : null
                 })}
               </div>
-              <div className="pointer-events-none absolute inset-x-2 grid grid-cols-7 auto-rows-min gap-y-1" style={{ top: `calc(2.25rem + ${visibleEventRows * 1.75}rem)` }}>
+              <div className="pointer-events-none absolute inset-x-2 grid grid-cols-7 auto-rows-min gap-y-1" style={{ top: `${2.25 + visibleEventRows * 1.75}rem` }}>
                 {birthdaySegments.filter(({ column }) => (eventCountByDate.get(toDateKey(week[column - 1])) ?? 0) < 3).map(({ birthday, column }) => {
                   const color = MEMBER_COLORS[birthday.member]
 
