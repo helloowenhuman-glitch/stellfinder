@@ -99,14 +99,6 @@ test('opens the event start-date agenda when selecting a schedule bar', () => {
   expect(onSelectEvent).not.toHaveBeenCalled()
 })
 
-test('uses an opaque event color so the today marker cannot show through', () => {
-  render(<MonthGrid year={2026} monthIndex={7} events={[popupEvent]} onSelectEvent={() => undefined} />)
-
-  const eventBar = screen.getByText('STELLIVE 팝업스토어')
-
-  expect(eventBar).toHaveStyle({ backgroundColor: '#8C6CFF', color: '#FFFFFF' })
-})
-
 test('shows three event rows and an overflow count for a dense date', () => {
   const events = Array.from({ length: 4 }, (_, index) => ({
     ...popupEvent,

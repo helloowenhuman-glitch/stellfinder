@@ -135,7 +135,7 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
                     className="pointer-events-auto w-full truncate rounded-md border px-2 py-1 text-center text-xs font-semibold"
                     key={`${segment.event.id}-${toDateKey(week[0])}`}
                     onClick={() => onSelectDate?.(segment.event.startAt.slice(0, 10))}
-                    style={{ backgroundColor: segment.event.displayColor, borderColor: segment.event.displayColor, color: '#FFFFFF', gridColumn: `${segment.startColumn} / span ${segment.span}`, gridRow: segment.row + 1 }}
+                    style={{ backgroundColor: `${segment.event.displayColor}20`, borderColor: `${segment.event.displayColor}55`, color: segment.event.displayColor, gridColumn: `${segment.startColumn} / span ${segment.span}`, gridRow: segment.row + 1 }}
                     type="button"
                   >
                     {getCalendarEventTitle(segment.event, todayKey)}
