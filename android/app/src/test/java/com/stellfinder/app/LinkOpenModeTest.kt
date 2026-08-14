@@ -7,6 +7,14 @@ import org.junit.Test
 
 class LinkOpenModeTest {
     @Test
+    fun `puts multi-select guidance in the dialog title so option rows stay available`() {
+        assertEquals(
+            "알림을 받을 일정 종류를 선택하세요\n복수 선택 가능",
+            multiChoiceDialogTitle("알림을 받을 일정 종류를 선택하세요"),
+        )
+    }
+
+    @Test
     fun `notifies only selected lead days`() {
         val selection = NotificationSelection(
             categories = setOf(NotificationCategory.GOODS),

@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -119,9 +120,8 @@ class MainActivity : Activity() {
     private fun showNotificationCategoryDialog(isFirstLaunch: Boolean) {
         val selectedCategories = NotificationSettings.read(preferences).categories.toMutableSet()
         val categories = NotificationCategory.entries.toTypedArray()
-        AlertDialog.Builder(this)
-            .setTitle("알림을 받을 일정 종류를 선택하세요")
-            .setMessage("복수 선택 가능")
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(multiChoiceDialogTitle("알림을 받을 일정 종류를 선택하세요"))
             .setMultiChoiceItems(categories.map(NotificationCategory::label).toTypedArray(), BooleanArray(categories.size) { categories[it] in selectedCategories }) { _, which, checked ->
                 if (checked) selectedCategories += categories[which] else selectedCategories -= categories[which]
             }
@@ -130,22 +130,31 @@ class MainActivity : Activity() {
                 if (isFirstLaunch) NotificationSettings.save(preferences, NotificationSelection(emptySet(), emptySet()))
             }
             .setCancelable(!isFirstLaunch)
-            .show()
+            .create()
+        showRoundedDialog(dialog)
     }
 
     private fun showNotificationLeadDayDialog(categories: Set<NotificationCategory>, isFirstLaunch: Boolean) {
         val selectedDays = NotificationSettings.read(preferences).leadDays.toMutableSet()
         val leadTimes = NotificationLeadTime.entries.toTypedArray()
-        AlertDialog.Builder(this)
-            .setTitle("알림을 받을 때를 선택하세요")
-            .setMessage("복수 선택 가능")
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(multiChoiceDialogTitle("알림을 받을 때를 선택하세요"))
             .setMultiChoiceItems(leadTimes.map(NotificationLeadTime::label).toTypedArray(), BooleanArray(leadTimes.size) { leadTimes[it].days in selectedDays }) { _, which, checked ->
                 if (checked) selectedDays += leadTimes[which].days else selectedDays -= leadTimes[which].days
             }
             .setPositiveButton("저장") { _, _ -> saveNotificationSelection(NotificationSelection(categories, selectedDays)) }
             .setNegativeButton("이전") { _, _ -> showNotificationCategoryDialog(isFirstLaunch) }
             .setCancelable(!isFirstLaunch)
-            .show()
+            .create()
+        showRoundedDialog(dialog)
+    }
+
+    private fun showRoundedDialog(dialog: AlertDialog) {
+        dialog.show()
+        dialog.window?.setBackgroundDrawable(GradientDrawable().apply {
+            setColor(Color.WHITE)
+            cornerRadius = dp(24).toFloat()
+        })
     }
 
     private fun saveNotificationSelection(selection: NotificationSelection) {

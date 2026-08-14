@@ -15,6 +15,15 @@ test('centers the calendar and upcoming view switch below the month heading', ()
   expect(screen.getByRole('navigation', { name: '보기 전환' })).toHaveClass('justify-center')
 })
 
+test('stacks the month selector below the Stellfinder logo on mobile screens', () => {
+  render(<CalendarPage />)
+
+  const header = screen.getByText('STELLFINDER').closest('header')
+
+  expect(header).toHaveClass('flex-col')
+  expect(screen.getByRole('button', { name: '월 선택 열기' })).toBeVisible()
+})
+
 test('selects a future month from the month picker', () => {
   render(<CalendarPage />)
 

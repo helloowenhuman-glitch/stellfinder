@@ -29,6 +29,8 @@ data class NotificationSelection(
 fun shouldNotify(daysUntil: Long, selection: NotificationSelection): Boolean =
     daysUntil >= 0 && daysUntil.toInt() in selection.leadDays
 
+fun multiChoiceDialogTitle(title: String): String = "$title\n복수 선택 가능"
+
 object NotificationSettings {
     private const val CATEGORY_KEY = "notification_categories"
     private const val LEAD_DAY_KEY = "notification_lead_days"

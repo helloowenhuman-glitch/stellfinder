@@ -166,10 +166,10 @@ export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 md:px-8">
       <div className="mx-auto max-w-7xl">
-        <header className="mb-8 grid grid-cols-[1fr_auto_1fr] items-center gap-5">
+        <header className="mb-8 flex flex-col items-start gap-3 md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-5">
           <p className="text-2xl font-black tracking-[0.12em]">STELLFINDER</p>
           <div className="flex items-center justify-center gap-5 text-2xl font-bold"><button aria-label="이전 달" className="disabled:cursor-not-allowed disabled:opacity-30" disabled={isFirstCalendarMonth} onClick={() => changeMonth(-1)} type="button">‹</button><h1><button aria-label="월 선택 열기" className="rounded-md px-2 py-1 hover:bg-slate-100" onClick={openMonthPicker} type="button">{month.getFullYear()}.{String(month.getMonth() + 1).padStart(2, '0')}</button></h1><button aria-label="다음 달" onClick={() => changeMonth(1)} type="button">›</button></div>
-          <div aria-hidden="true" />
+          <div aria-hidden="true" className="hidden md:block" />
         </header>
         <nav className="mb-4 flex flex-wrap justify-center gap-2" aria-label="보기 전환">
           <button className={view === 'calendar' ? 'rounded-lg bg-[#8C6CFF] px-5 py-2 text-sm font-semibold text-white' : 'rounded-lg border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-600'} onClick={() => setView('calendar')} type="button">캘린더 보기</button>
