@@ -83,8 +83,14 @@ test('marks the supplied today key with a navy date marker', () => {
   render(<MonthGrid year={2026} monthIndex={7} events={[popupEvent]} onSelectEvent={() => undefined} todayKey="2026-08-12" />)
 
   expect(screen.getByText('12')).toHaveClass('bg-[#102B52]', 'text-white')
-  expect(screen.getByText('12')).toHaveClass('relative', 'z-0')
+  expect(screen.getByText('12')).toHaveClass('h-7', 'relative', 'z-0')
   expect(screen.getByText('STELLIVE 팝업스토어').parentElement).toHaveClass('top-7', 'z-10')
+})
+
+test('keeps the original today marker height when no schedule bar is present', () => {
+  render(<MonthGrid year={2026} monthIndex={7} events={[]} onSelectEvent={() => undefined} todayKey="2026-08-12" />)
+
+  expect(screen.getByText('12')).toHaveClass('h-8')
 })
 
 test('opens the event start-date agenda when selecting a schedule bar', () => {

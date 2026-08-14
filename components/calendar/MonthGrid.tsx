@@ -113,8 +113,9 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
                 const dateKey = toDateKey(date)
                 const inCurrentMonth = date.getMonth() === monthIndex
                 const weekday = date.getDay()
+                const hasScheduleBar = (eventCountByDate.get(dateKey) ?? 0) > 0
                 const dateClassName = dateKey === todayKey
-                  ? 'relative z-0 inline-flex h-8 min-w-8 items-center justify-center rounded-md bg-[#102B52] px-1 text-sm font-semibold text-white'
+                  ? `relative z-0 inline-flex ${hasScheduleBar ? 'h-7' : 'h-8'} min-w-8 items-center justify-center rounded-md bg-[#102B52] px-1 text-sm font-semibold text-white`
                   : weekday === 0
                     ? 'text-sm font-semibold text-rose-500'
                     : weekday === 6
