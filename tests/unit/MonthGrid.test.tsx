@@ -84,7 +84,7 @@ test('marks the supplied today key with a navy date marker', () => {
 
   expect(screen.getByText('12')).toHaveClass('bg-[#102B52]', 'text-white')
   expect(screen.getByText('12')).toHaveClass('h-7', 'relative', 'z-0')
-  expect(screen.getByText('STELLIVE 팝업스토어').parentElement).toHaveClass('top-7', 'z-10')
+  expect(screen.getByText('STELLIVE 팝업스토어').parentElement).toHaveClass('top-10', 'z-10')
 })
 
 test('keeps the original today marker height when no schedule bar is present', () => {
@@ -161,7 +161,7 @@ test('uses only the rendered event rows when placing birthdays', () => {
 
   render(<MonthGrid birthdays={[birthday]} year={2026} monthIndex={7} events={events} onSelectBirthday={() => undefined} onSelectEvent={() => undefined} />)
 
-  expect(screen.getByRole('button', { name: '사키하네 후야 생일' }).parentElement).toHaveStyle({ top: '64px' })
+  expect(screen.getByRole('button', { name: '사키하네 후야 생일' }).parentElement).toHaveStyle({ top: '76px' })
 })
 
 test('hides the fourth item without adding a dense-cell gradient', () => {

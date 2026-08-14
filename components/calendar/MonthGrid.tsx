@@ -94,6 +94,7 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
           const birthdaySegments = getWeekBirthdaySegments(birthdays, week)
           const visibleSegments = segments.filter((segment) => segment.row < 3)
           const visibleEventRows = visibleSegments.length === 0 ? 0 : Math.max(...visibleSegments.map((segment) => segment.row + 1))
+          const birthdayTop = 2.25 + visibleEventRows * 1.75 + (visibleEventRows > 0 ? 0.75 : 0)
           const eventCountByDate = new Map(week.map((date, column) => [
             toDateKey(date),
             segments.filter((segment) => (
@@ -130,7 +131,7 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
                   </button>
                 )
               })}
-              <div className="pointer-events-none absolute inset-x-2 top-7 z-10 grid grid-cols-7 auto-rows-min gap-y-1">
+              <div className="pointer-events-none absolute inset-x-2 top-10 z-10 grid grid-cols-7 auto-rows-min gap-y-1">
                 {visibleSegments.map((segment) => (
                   <button
                     className="pointer-events-auto w-full truncate rounded-md border px-2 py-1 text-center text-xs font-semibold"
@@ -155,7 +156,7 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
                   ) : null
                 })}
               </div>
-              <div className="pointer-events-none absolute inset-x-2 grid grid-cols-7 auto-rows-min gap-y-1" style={{ top: `${2.25 + visibleEventRows * 1.75}rem` }}>
+              <div className="pointer-events-none absolute inset-x-2 grid grid-cols-7 auto-rows-min gap-y-1" style={{ top: `${birthdayTop}rem` }}>
                 {birthdaySegments.filter(({ column }) => (eventCountByDate.get(toDateKey(week[column - 1])) ?? 0) < 3).map(({ birthday, column }) => {
                   const color = MEMBER_COLORS[birthday.member]
 
