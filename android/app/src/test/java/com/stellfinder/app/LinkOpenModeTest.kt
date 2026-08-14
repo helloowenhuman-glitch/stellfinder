@@ -7,6 +7,25 @@ import org.junit.Test
 
 class LinkOpenModeTest {
     @Test
+    fun `notifies only selected lead days`() {
+        val selection = NotificationSelection(
+            categories = setOf(NotificationCategory.GOODS),
+            leadDays = setOf(7, 3, 0),
+        )
+
+        assertTrue(shouldNotify(3, selection))
+        assertFalse(shouldNotify(5, selection))
+    }
+
+    @Test
+    fun `presents settings as an icon-only control with an accessible label`() {
+        val presentation = settingsButtonPresentation()
+
+        assertTrue(presentation.isIconOnly)
+        assertEquals("설정", presentation.contentDescription)
+    }
+
+    @Test
     fun `adds the status bar inset to the toolbar top padding`() {
         assertEquals(28, toolbarTopPadding(basePadding = 4, statusBarInset = 24))
     }
