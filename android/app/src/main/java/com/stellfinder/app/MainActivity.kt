@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.ViewGroup
+import android.view.WindowInsets
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -42,6 +43,10 @@ class MainActivity : Activity() {
         }
         toolbar.addView(title, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         toolbar.addView(settingsButton)
+        root.setOnApplyWindowInsetsListener { _, insets ->
+            toolbar.setPadding(dp(16), toolbarTopPadding(dp(4), insets.getInsets(WindowInsets.Type.statusBars()).top), dp(8), dp(4))
+            insets
+        }
 
         webView = WebView(this).apply {
             settings.javaScriptEnabled = true
@@ -105,3 +110,5 @@ class MainActivity : Activity() {
         const val LINK_MODE_KEY = "link_open_mode"
     }
 }
+
+fun toolbarTopPadding(basePadding: Int, statusBarInset: Int): Int = basePadding + statusBarInset
