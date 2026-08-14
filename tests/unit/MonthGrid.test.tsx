@@ -120,7 +120,7 @@ test('shows three event rows and an overflow count for a dense date', () => {
   expect(screen.getByText('Dense event 2')).toBeVisible()
   expect(screen.getByText('Dense event 3')).toBeVisible()
   expect(screen.queryByText('Dense event 4')).not.toBeInTheDocument()
-  expect(screen.getByLabelText('2026-08-07 hidden events 1')).toHaveClass('bg-[#E2E8F0]', 'text-[#475569]')
+  expect(screen.getByLabelText('2026-08-07 hidden events 1')).toHaveClass('top-2', 'h-6', 'min-w-6', 'bg-[#E2E8F0]', 'text-[#475569]')
 })
 
 test('counts a birthday as the fourth calendar item on its date', () => {

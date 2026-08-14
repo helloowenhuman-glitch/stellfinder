@@ -144,14 +144,14 @@ export function MonthGrid({ year, monthIndex, events, birthdays = [], onSelectEv
                   </button>
                 ))}
               </div>
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 grid grid-cols-7">
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-10 grid grid-cols-7">
                 {week.map((date, column) => {
                   const dateKey = toDateKey(date)
                   const hiddenCount = hiddenCountByDate.get(dateKey) ?? 0
 
                   return hiddenCount > 0 ? (
                     <div className="relative h-10" key={`${dateKey}-overflow`} style={{ gridColumn: column + 1 }}>
-                      <span aria-label={`${dateKey} hidden events ${hiddenCount}`} className="absolute bottom-2 right-2 inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-[#CBD5E1] bg-[#E2E8F0] px-2 text-xs font-bold text-[#475569]">+{hiddenCount}</span>
+                      <span aria-label={`${dateKey} hidden events ${hiddenCount}`} className="absolute top-2 right-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-[#CBD5E1] bg-[#E2E8F0] px-1 text-xs font-bold text-[#475569]">+{hiddenCount}</span>
                     </div>
                   ) : null
                 })}
