@@ -119,6 +119,14 @@ test('filters events by the member selected from the single member menu', async 
   expect(screen.queryByText('나나 굿즈')).not.toBeInTheDocument()
 })
 
+test('renders the member menu above calendar event bars', () => {
+  render(<CalendarPage />)
+
+  fireEvent.click(screen.getByRole('button', { name: '멤버: 전체' }))
+
+  expect(screen.getAllByRole('button', { name: '전체' })[1].parentElement).toHaveClass('z-20')
+})
+
 test('shows only D-15 events in the upcoming view', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
     ok: true,

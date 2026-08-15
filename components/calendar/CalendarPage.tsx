@@ -187,7 +187,7 @@ export function CalendarPage({ todayKey = getKoreaDateKey() }: CalendarPageProps
               멤버: {member === 'all' ? '전체' : member}
             </button>
             {isMemberMenuOpen && (
-              <div className="absolute left-0 z-10 mt-2 max-h-80 w-52 overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
+              <div className="absolute left-0 z-20 mt-2 max-h-80 w-52 overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
                 <button className="block w-full rounded-md px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50" onClick={() => { setMember('all'); setIsMemberMenuOpen(false) }} type="button">전체</button>
                 {MEMBERS.map((memberName) => (
                   <button className="block w-full rounded-md px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50" key={memberName} onClick={() => { setMember(memberName); setIsMemberMenuOpen(false) }} type="button">{memberName}</button>
