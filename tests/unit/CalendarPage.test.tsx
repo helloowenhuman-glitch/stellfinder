@@ -15,12 +15,12 @@ test('centers the calendar and upcoming view switch below the month heading', ()
   expect(screen.getByRole('navigation', { name: '보기 전환' })).toHaveClass('justify-center')
 })
 
-test('stacks the month selector below the Stellfinder logo on mobile screens', () => {
+test('keeps the month selector centered in the mobile header', () => {
   render(<CalendarPage />)
 
   const header = screen.getByText('STELLFINDER').closest('header')
 
-  expect(header).toHaveClass('flex-col')
+  expect(header).toHaveClass('grid-cols-[1fr_auto_1fr]')
   expect(screen.getByRole('button', { name: '월 선택 열기' })).toBeVisible()
 })
 
@@ -36,9 +36,13 @@ test('selects a future month from the month picker', () => {
   expect(screen.getByRole('button', { name: '월 선택 열기' })).toHaveTextContent('2027.02')
 })
 
-test('starts the calendar at August 2026 and does not allow earlier months', () => {
-  render(<CalendarPage />)
+test('opens at the current Korean month and does not allow months before August 2026', () => {
+  render(<CalendarPage todayKey="2026-09-01" />)
 
+  expect(screen.getByRole('button', { name: '월 선택 열기' })).toHaveTextContent('2026.09')
+  expect(screen.getByRole('button', { name: '이전 달' })).not.toBeDisabled()
+
+  fireEvent.click(screen.getByRole('button', { name: '이전 달' }))
   expect(screen.getByRole('button', { name: '이전 달' })).toBeDisabled()
 
   fireEvent.click(screen.getByRole('button', { name: '월 선택 열기' }))
@@ -46,6 +50,14 @@ test('starts the calendar at August 2026 and does not allow earlier months', () 
 
   expect(screen.getByRole('option', { name: '1월' })).toBeDisabled()
   expect(screen.getByRole('option', { name: '8월' })).not.toBeDisabled()
+})
+
+test('renders only the supplied Korean current date as the today marker', () => {
+  const { container } = render(<CalendarPage todayKey="2026-08-22" />)
+  const todayMarkers = Array.from(container.querySelectorAll('time')).filter((element) => element.classList.contains('bg-[#102B52]'))
+
+  expect(todayMarkers).toHaveLength(1)
+  expect(todayMarkers[0]).toHaveTextContent('22')
 })
 
 test('uses a compact year field and a rounded month option list', () => {
